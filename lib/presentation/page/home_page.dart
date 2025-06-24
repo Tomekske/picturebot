@@ -24,6 +24,14 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Gallery(pictures: pictures);
+    return Column(
+      children: [
+        FilledButton(
+          child: Text('Create album'),
+          onPressed: () => print('Album created'),
+        ),
+        Expanded(child: Gallery(pictures: pictures)),
+      ],
+    );
   }
 }
