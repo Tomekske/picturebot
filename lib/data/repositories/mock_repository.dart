@@ -6,25 +6,28 @@ import '../enums/node_type.dart';
 class MockRepository {
   static List<Photo> generatePhotos(int count, String prefix) {
     final random = Random();
-    final cameras = ['Sony A7IV', 'Canon R5', 'Nikon Z6'];
-    final lenses = ['24-70mm f/2.8', '85mm f/1.4', '16-35mm f/4'];
 
     return List.generate(count, (index) {
       final date = DateTime.now().subtract(Duration(days: random.nextInt(30)));
       return Photo(
         id: '${prefix}_$index',
-        name: 'DSC_${1000 + index}.${index % 3 == 0 ? "RAW" : "JPG"}',
+        name: 'DSC_${1000 + index}.${"JPG"}',
         url: 'https://via.placeholder.com/300?text=Photo+${index + 1}',
         date: date,
-        type: index % 3 == 0 ? 'RAW' : 'JPG',
-        status: ['untagged', 'picked', 'untagged', 'rejected'][random.nextInt(4)],
+        type: 'JPG',
+        status: [
+          'untagged',
+          'picked',
+          'untagged',
+          'rejected',
+        ][random.nextInt(4)],
         colorLabel: ['none', 'red', 'blue', 'none'][random.nextInt(4)],
         exif: {
-          'Camera': cameras[index % 3],
-          'Lens': lenses[index % 3],
-          'ISO': '${(index + 1) * 100}',
-          'Aperture': 'f/${(random.nextDouble() * 5 + 1.4).toStringAsFixed(1)}',
-          'Shutter': '1/${random.nextInt(2000)}s',
+          'Camera': 'Sony A6600',
+          'Lens': 'Sony E 16-50mm F/3.5-5.6 PZ OSS II',
+          'ISO': '100',
+          'Aperture': 'f/2.8',
+          'Shutter': '1/250',
           'Dimensions': '6000 x 4000',
           'Size': '24.5 MB',
         },
@@ -35,7 +38,7 @@ class MockRepository {
   static HierarchyNode getInitialData() {
     return HierarchyNode(
       id: 'root',
-      name: 'Bibliotheek',
+      name: 'Library',
       type: NodeType.folder,
       children: [
         HierarchyNode(
@@ -52,14 +55,14 @@ class MockRepository {
               children: [
                 HierarchyNode(
                   id: 'la',
-                  name: 'Los Angeles Shoot',
+                  name: 'Los Angeles',
                   type: NodeType.album,
                   parentId: 'ca',
                   photos: generatePhotos(12, 'la'),
                 ),
                 HierarchyNode(
                   id: 'sf',
-                  name: 'San Francisco Trip',
+                  name: 'San Francisco',
                   type: NodeType.album,
                   parentId: 'ca',
                   photos: generatePhotos(8, 'sf'),
@@ -67,8 +70,8 @@ class MockRepository {
               ],
             ),
             HierarchyNode(
-              id: 'ny',
-              name: 'New York',
+              id: 'fl',
+              name: 'Florida',
               type: NodeType.folder,
               parentId: 'us',
               children: [],
