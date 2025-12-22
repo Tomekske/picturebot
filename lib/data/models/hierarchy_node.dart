@@ -5,7 +5,7 @@ class HierarchyNode {
   final String id;
   final String name;
   final NodeType type;
-  final String? parentId;
+  final int? parentId;
   final List<HierarchyNode> children;
   final List<Photo> photos;
 
@@ -18,7 +18,6 @@ class HierarchyNode {
     this.photos = const [],
   });
 
-  // Helper for immutability updates (simplified for prototype)
   HierarchyNode copyWith({
     String? name,
     List<HierarchyNode>? children,

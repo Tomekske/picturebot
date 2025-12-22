@@ -37,52 +37,52 @@ class MockRepository {
 
   static HierarchyNode getInitialData() {
     return HierarchyNode(
-      id: 'root',
+      id: '1',
       name: 'Library',
       type: NodeType.folder,
       children: [
         HierarchyNode(
-          id: 'us',
+          id: '2',
           name: 'The United States',
           type: NodeType.folder,
-          parentId: 'root',
+          parentId: 1,
           children: [
             HierarchyNode(
-              id: 'ca',
+              id: '3',
               name: 'California',
               type: NodeType.folder,
-              parentId: 'us',
+              parentId: 2,
               children: [
                 HierarchyNode(
-                  id: 'la',
+                  id: '4',
                   name: 'Los Angeles',
                   type: NodeType.album,
-                  parentId: 'ca',
+                  parentId: 3,
                   photos: generatePhotos(12, 'la'),
                 ),
                 HierarchyNode(
-                  id: 'sf',
+                  id: '5',
                   name: 'San Francisco',
                   type: NodeType.album,
-                  parentId: 'ca',
+                  parentId: 3,
                   photos: generatePhotos(8, 'sf'),
                 ),
               ],
             ),
             HierarchyNode(
-              id: 'fl',
+              id: '6',
               name: 'Florida',
               type: NodeType.folder,
-              parentId: 'us',
+              parentId: 2,
               children: [],
             ),
           ],
         ),
         HierarchyNode(
-          id: 'be',
+          id: '7',
           name: 'Belgium',
           type: NodeType.folder,
-          parentId: 'root',
+          parentId: 1,
           children: [],
         ),
       ],

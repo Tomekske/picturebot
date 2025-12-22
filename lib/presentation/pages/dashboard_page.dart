@@ -173,7 +173,7 @@ class _DashboardPageState extends State<DashboardPage> {
           text: "Empty Folder",
           actionLabel: "New Item",
           onAction: () => AppDialogs.showAddDialog(context, (name, type) {
-            _bloc.addNode(name, type, node.id);
+            _bloc.addNode(name, type, int.parse(node.id));
           }),
         );
       } else {
@@ -374,7 +374,7 @@ class _DashboardPageState extends State<DashboardPage> {
               icon: const Icon(FluentIcons.add),
               label: const Text('New'),
               onPressed: () => AppDialogs.showAddDialog(context, (name, type) {
-                _bloc.addNode(name, type, node.id);
+                _bloc.addNode(name, type, int.parse(node.id));
               }),
             ),
             CommandBarButton(
@@ -436,7 +436,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildAddItemCard(HierarchyNode parentNode) {
     return HoverButton(
       onPressed: () => AppDialogs.showAddDialog(context, (name, type) {
-        _bloc.addNode(name, type, parentNode.id);
+        _bloc.addNode(name, type, int.parse(parentNode.id));
       }),
       builder: (p0, states) {
         return Container(
