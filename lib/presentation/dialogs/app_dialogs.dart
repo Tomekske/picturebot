@@ -29,7 +29,7 @@ class AppDialogs {
                 value: type,
                 items: const [
                   ComboBoxItem(value: 'ALBUM', child: Text("Album")),
-                  ComboBoxItem(value: 'FOLDER', child: Text("Map")),
+                  ComboBoxItem(value: 'FOLDER', child: Text("Folder")),
                 ],
                 onChanged: (v) => type = v ?? 'ALBUM',
               ),
@@ -70,7 +70,9 @@ class AppDialogs {
               onPressed: () => Navigator.pop(context),
             ),
             FilledButton(
-              style: ButtonStyle(backgroundColor: ButtonState.all(Colors.red)),
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all(Colors.red),
+              ),
               child: const Text('Delete'),
               onPressed: () {
                 onConfirm();

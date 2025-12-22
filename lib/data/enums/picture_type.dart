@@ -1,0 +1,4 @@
+enum PictureType {
+  raw,
+  jpg,
+}

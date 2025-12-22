@@ -1,13 +1,13 @@
 import '../enums/node_type.dart';
-import 'photo.dart';
+import 'picture.dart';
 
 class HierarchyNode {
-  final String id;
+  final int id;
   final String name;
   final NodeType type;
   final int? parentId;
   final List<HierarchyNode> children;
-  final List<Photo> photos;
+  final List<Picture> pictures;
 
   HierarchyNode({
     required this.id,
@@ -15,13 +15,13 @@ class HierarchyNode {
     required this.type,
     this.parentId,
     this.children = const [],
-    this.photos = const [],
+    this.pictures = const [],
   });
 
   HierarchyNode copyWith({
     String? name,
     List<HierarchyNode>? children,
-    List<Photo>? photos,
+    List<Picture>? pictures,
   }) {
     return HierarchyNode(
       id: id,
@@ -29,7 +29,7 @@ class HierarchyNode {
       type: type,
       parentId: parentId,
       children: children ?? this.children,
-      photos: photos ?? this.photos,
+      pictures: pictures ?? this.pictures,
     );
   }
 }

@@ -5,7 +5,7 @@ import '../../data/enums/node_type.dart';
 class AlbumTreeView extends StatelessWidget {
   final HierarchyNode root;
   final Function(HierarchyNode) onSelect;
-  final String? selectedId;
+  final int? selectedId;
 
   const AlbumTreeView({
     super.key,
@@ -19,13 +19,25 @@ class AlbumTreeView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ...root.children.map((child) => _buildNode(child, 0, context)),
+        ...root.children.map((child) => _buildNode(child, 0, context, {})),
       ],
     );
   }
 
-  Widget _buildNode(HierarchyNode node, int depth, BuildContext context) {
+  Widget _buildNode(
+    HierarchyNode node,
+    int depth,
+    BuildContext context,
+    Set<int> visited,
+  ) {
+    // Prevent circular references
+    if (visited.contains(node.id)) {
+      return const SizedBox.shrink();
+    }
+
     final isSelected = node.id == selectedId;
+    final newVisited = {...visited, node.id};
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -55,7 +67,7 @@ class AlbumTreeView extends StatelessWidget {
         ),
         if (node.children.isNotEmpty)
           ...node.children.map(
-            (child) => _buildNode(child, depth + 1, context),
+            (child) => _buildNode(child, depth + 1, context, newVisited),
           ),
       ],
     );

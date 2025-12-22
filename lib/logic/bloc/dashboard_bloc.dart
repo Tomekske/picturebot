@@ -1,14 +1,14 @@
 import 'package:flutter/foundation.dart';
 import '../../data/models/hierarchy_node.dart';
-import '../../data/models/photo.dart';
+import '../../data/models/picture.dart';
 import '../../data/repositories/mock_repository.dart';
 
 class DashboardBloc extends ChangeNotifier {
-  late HierarchyNode _rootNode;
+  HierarchyNode _rootNode;
   HierarchyNode? _selectedNode;
-  Photo? _selectedPhoto;
+  Picture? _selectedPicture;
 
-  DashboardBloc() {
+  DashboardBloc() : _rootNode = MockRepository.getInitialData() {
     _rootNode = MockRepository.getInitialData();
     _selectedNode = _rootNode;
   }
@@ -16,17 +16,17 @@ class DashboardBloc extends ChangeNotifier {
   // Getters
   HierarchyNode get rootNode => _rootNode;
   HierarchyNode? get selectedNode => _selectedNode;
-  Photo? get selectedPhoto => _selectedPhoto;
+  Picture? get selectedPicture => _selectedPicture;
 
   // Events/Methods
   void selectNode(HierarchyNode node) {
     _selectedNode = node;
-    _selectedPhoto = null;
+    _selectedPicture = null;
     notifyListeners();
   }
 
-  void selectPhoto(Photo? photo) {
-    _selectedPhoto = photo;
+  void selectPicture(Picture? picture) {
+    _selectedPicture = picture;
     notifyListeners();
   }
 
@@ -36,7 +36,7 @@ class DashboardBloc extends ChangeNotifier {
     // For this prototype, we'll just print to console as per original code.
     if (kDebugMode) {
       print(
-        "Adding $name ($type) to $parentId (Logic needs immutable update implementation)",
+        "Adding $name ($type) to $parentId",
       );
     }
     notifyListeners();

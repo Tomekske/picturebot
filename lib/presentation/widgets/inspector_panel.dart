@@ -1,14 +1,18 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:intl/intl.dart';
-import '../../data/models/photo.dart';
+import '../../data/models/picture.dart';
 import 'section_header.dart';
 import 'info_row.dart';
 
 class InspectorPanel extends StatelessWidget {
-  final Photo photo;
+  final Picture picture;
   final VoidCallback onClose;
 
-  const InspectorPanel({super.key, required this.photo, required this.onClose});
+  const InspectorPanel({
+    super.key,
+    required this.picture,
+    required this.onClose,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +57,6 @@ class InspectorPanel extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                // Preview
                 Container(
                   height: 180,
                   color: Colors.black,
@@ -67,14 +70,14 @@ class InspectorPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  photo.name,
+                  picture.name,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
                 Text(
-                  "${photo.type} • ${photo.exif['Size']}",
+                  "${picture.type} • ${picture.exif.size}",
                   style: const TextStyle(color: Colors.grey),
                 ),
 
@@ -100,18 +103,18 @@ class InspectorPanel extends StatelessWidget {
                 const SectionHeader(title: "Information"),
                 InfoRow(
                   label: "Date",
-                  value: DateFormat('yyyy-MM-dd').format(photo.date),
+                  value: DateFormat('yyyy-MM-dd').format(picture.date),
                 ),
 
                 InfoRow(
                   label: "Time",
-                  value: DateFormat('HH:mm').format(photo.date),
+                  value: DateFormat('HH:mm').format(picture.date),
                 ),
 
                 const SizedBox(height: 16),
                 const SectionHeader(title: "CAMERA"),
-                InfoRow(label: "Model", value: photo.exif['Camera'] ?? '-'),
-                InfoRow(label: "Lens", value: photo.exif['Lens'] ?? '-'),
+                InfoRow(label: "Model", value: picture.exif.camera ?? '-'),
+                InfoRow(label: "Lens", value: picture.exif.lens ?? '-'),
 
                 const SizedBox(height: 16),
                 const SectionHeader(title: "SETTINGS"),
@@ -120,13 +123,13 @@ class InspectorPanel extends StatelessWidget {
                     Expanded(
                       child: InfoRow(
                         label: "ISO",
-                        value: photo.exif['ISO'] ?? '-',
+                        value: picture.exif.iso ?? '-',
                       ),
                     ),
                     Expanded(
                       child: InfoRow(
                         label: "Aperture",
-                        value: photo.exif['Aperture'] ?? '-',
+                        value: picture.exif.aperture ?? '-',
                       ),
                     ),
                   ],
@@ -137,13 +140,13 @@ class InspectorPanel extends StatelessWidget {
                     Expanded(
                       child: InfoRow(
                         label: "Shutter",
-                        value: photo.exif['Shutter'] ?? '-',
+                        value: picture.exif.shutter ?? '-',
                       ),
                     ),
                     Expanded(
                       child: InfoRow(
                         label: "Dimensions",
-                        value: photo.exif['Dimensions'] ?? '-',
+                        value: picture.exif.dimensions ?? '-',
                       ),
                     ),
                   ],
@@ -151,7 +154,6 @@ class InspectorPanel extends StatelessWidget {
               ],
             ),
           ),
-          // Footer Actions
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(

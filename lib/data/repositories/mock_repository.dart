@@ -1,76 +1,76 @@
 import 'dart:math';
-import '../models/photo.dart';
+import 'package:picturebot/data/enums/picture_status.dart';
+import 'package:picturebot/data/models/exif.dart';
+
+import '../enums/color_label.dart';
+import '../enums/picture_type.dart';
+import '../models/picture.dart';
 import '../models/hierarchy_node.dart';
 import '../enums/node_type.dart';
 
 class MockRepository {
-  static List<Photo> generatePhotos(int count, String prefix) {
+  static List<Picture> generatePhotos(int count, String prefix) {
     final random = Random();
 
     return List.generate(count, (index) {
       final date = DateTime.now().subtract(Duration(days: random.nextInt(30)));
-      return Photo(
+      return Picture(
         id: '${prefix}_$index',
-        name: 'DSC_${1000 + index}.${"JPG"}',
+        name: 'DSC_${1000 + index}.JPG',
         url: 'https://via.placeholder.com/300?text=Photo+${index + 1}',
         date: date,
-        type: 'JPG',
-        status: [
-          'untagged',
-          'picked',
-          'untagged',
-          'rejected',
-        ][random.nextInt(4)],
-        colorLabel: ['none', 'red', 'blue', 'none'][random.nextInt(4)],
-        exif: {
-          'Camera': 'Sony A6600',
-          'Lens': 'Sony E 16-50mm F/3.5-5.6 PZ OSS II',
-          'ISO': '100',
-          'Aperture': 'f/2.8',
-          'Shutter': '1/250',
-          'Dimensions': '6000 x 4000',
-          'Size': '24.5 MB',
-        },
+        type: PictureType.jpg,
+        status: PictureStatus.untagged,
+        colorLabel: ColorLabel.none,
+        exif: Exif(
+          camera: 'Sony A6600',
+          lens: 'Sony E 16-50mm F/3.5-5.6 PZ OSS II',
+          iso: '100',
+          aperture: 'f/2.8',
+          shutter: '1/250',
+          dimensions: '6000 x 4000',
+          size: '24.5 MB',
+        ),
       );
     });
   }
 
   static HierarchyNode getInitialData() {
     return HierarchyNode(
-      id: '1',
+      id: 1,
       name: 'Library',
       type: NodeType.folder,
       children: [
         HierarchyNode(
-          id: '2',
+          id: 2,
           name: 'The United States',
           type: NodeType.folder,
           parentId: 1,
           children: [
             HierarchyNode(
-              id: '3',
+              id: 3,
               name: 'California',
               type: NodeType.folder,
               parentId: 2,
               children: [
                 HierarchyNode(
-                  id: '4',
+                  id: 4,
                   name: 'Los Angeles',
                   type: NodeType.album,
                   parentId: 3,
-                  photos: generatePhotos(12, 'la'),
+                  pictures: generatePhotos(12, 'la'),
                 ),
                 HierarchyNode(
-                  id: '5',
+                  id: 5,
                   name: 'San Francisco',
                   type: NodeType.album,
                   parentId: 3,
-                  photos: generatePhotos(8, 'sf'),
+                  pictures: generatePhotos(8, 'sf'),
                 ),
               ],
             ),
             HierarchyNode(
-              id: '6',
+              id: 6,
               name: 'Florida',
               type: NodeType.folder,
               parentId: 2,
@@ -79,7 +79,7 @@ class MockRepository {
           ],
         ),
         HierarchyNode(
-          id: '7',
+          id: 7,
           name: 'Belgium',
           type: NodeType.folder,
           parentId: 1,

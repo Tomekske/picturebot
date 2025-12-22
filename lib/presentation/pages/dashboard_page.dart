@@ -1,7 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:picturebot/data/enums/picture_status.dart';
 import '../../data/models/hierarchy_node.dart';
 import '../../logic/bloc/dashboard_bloc.dart';
-import '../../data/models/photo.dart';
+import '../../data/models/picture.dart';
 import '../../data/enums/node_type.dart';
 import '../widgets/inspector_panel.dart';
 import '../widgets/status_icon.dart';
@@ -26,20 +27,25 @@ class _DashboardPageState extends State<DashboardPage> {
   int topIndex = 0;
 
   @override
+  void dispose() {
+    _bloc.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _bloc,
       builder: (context, _) {
         final selectedNode = _bloc.selectedNode;
-        final selectedPhoto = _bloc.selectedPhoto;
 
-        // 1. Generate a FLAT list of Navigation Items with visual indentation
+        // Generate a FLAT list of Navigation Items with visual indentation
         final List<NavigationPaneItem> navItems = [
           PaneItemHeader(header: const Text("LIBRARY")),
           ..._buildFlatPaneItems(_bloc.rootNode),
         ];
 
-        // 2. Calculate the index for the NavigationPane to update the highlight
+        // Calculate the index for the NavigationPane to update the highlight
         final int selectedIndex = _calculateSelectedIndex(
           navItems,
           selectedNode?.id,
@@ -118,7 +124,7 @@ class _DashboardPageState extends State<DashboardPage> {
           overflow: TextOverflow.ellipsis,
         ),
         // Pass the specific node to the body builder so the view is correct when clicked
-        body: _buildMainContent(node, _bloc.selectedPhoto),
+        body: _buildMainContent(node, _bloc.selectedPicture),
         onTap: () {
           // Important: Sync the BLoC state when an item is clicked
           _bloc.selectNode(node);
@@ -137,7 +143,7 @@ class _DashboardPageState extends State<DashboardPage> {
   // --- Helper to Find Index for Selection ---
   int _calculateSelectedIndex(
     List<NavigationPaneItem> items,
-    String? targetId,
+    int? targetId,
   ) {
     if (targetId == null) return 0;
 
@@ -157,7 +163,10 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   // --- MAIN CONTENT BUILDER ---
-  Widget _buildMainContent(HierarchyNode? nodeToRender, Photo? selectedPhoto) {
+  Widget _buildMainContent(
+    HierarchyNode? nodeToRender,
+    Picture? selectedPicture,
+  ) {
     // Use the passed node, fallback to BLoC if null (though it shouldn't be)
     final node = nodeToRender;
 
@@ -173,7 +182,7 @@ class _DashboardPageState extends State<DashboardPage> {
           text: "Empty Folder",
           actionLabel: "New Item",
           onAction: () => AppDialogs.showAddDialog(context, (name, type) {
-            _bloc.addNode(name, type, int.parse(node.id));
+            _bloc.addNode(name, type, node.id);
           }),
         );
       } else {
@@ -219,7 +228,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       Text(
                         child.type == NodeType.folder
                             ? "${child.children.length} items"
-                            : "${child.photos.length} Pictures",
+                            : "${child.pictures.length} Pictures",
                         style: FluentTheme.of(context).typography.caption,
                       ),
                     ],
@@ -232,17 +241,17 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     } else {
       // CASE: ALBUM VIEW
-      final Map<String, List<Photo>> grouped = {};
-      for (var p in node.photos) {
+      final Map<String, List<Picture>> grouped = {};
+      for (var p in node.pictures) {
         final key = "${p.date.day}-${p.date.month}-${p.date.year}";
         if (!grouped.containsKey(key)) grouped[key] = [];
         grouped[key]!.add(p);
       }
 
-      if (node.photos.isEmpty) {
+      if (node.pictures.isEmpty) {
         content = _buildEmptyState(
           icon: FluentIcons.photo2,
-          text: "Albums has no pictures",
+          text: "Album has no pictures",
           actionLabel: "Import pictures",
           onAction: () {},
         );
@@ -251,7 +260,7 @@ class _DashboardPageState extends State<DashboardPage> {
           itemCount: grouped.keys.length,
           itemBuilder: (context, index) {
             final dateKey = grouped.keys.elementAt(index);
-            final photos = grouped[dateKey]!;
+            final pictures = grouped[dateKey]!;
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,7 +277,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        "(${photos.length})",
+                        "(${pictures.length})",
                         style: TextStyle(
                           color: FluentTheme.of(
                             context,
@@ -287,12 +296,12 @@ class _DashboardPageState extends State<DashboardPage> {
                     crossAxisSpacing: 8,
                     childAspectRatio: 1,
                   ),
-                  itemCount: photos.length,
+                  itemCount: pictures.length,
                   itemBuilder: (c, i) {
-                    final photo = photos[i];
-                    final isSelected = selectedPhoto?.id == photo.id;
+                    final picture = pictures[i];
+                    final isSelected = selectedPicture?.id == picture.id;
                     return GestureDetector(
-                      onTap: () => _bloc.selectPhoto(photo),
+                      onTap: () => _bloc.selectPicture(picture),
                       child: Container(
                         decoration: BoxDecoration(
                           color: FluentTheme.of(
@@ -312,10 +321,10 @@ class _DashboardPageState extends State<DashboardPage> {
                               child: Icon(
                                 FluentIcons.photo2,
                                 size: 32,
-                                color: Colors.grey.withOpacity(0.5),
+                                color: Colors.grey.withValues(alpha: 0.5),
                               ),
                             ),
-                            if (photo.status == 'picked')
+                            if (picture.status == PictureStatus.picked)
                               Positioned(
                                 top: 4,
                                 left: 4,
@@ -324,7 +333,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                   color: Colors.red,
                                 ),
                               ),
-                            if (photo.status == 'rejected')
+                            if (picture.status == PictureStatus.rejected)
                               const Positioned(
                                 top: 4,
                                 left: 4,
@@ -338,10 +347,10 @@ class _DashboardPageState extends State<DashboardPage> {
                               left: 0,
                               right: 0,
                               child: Container(
-                                color: Colors.black.withOpacity(0.5),
+                                color: Colors.black.withValues(alpha: 0.5),
                                 padding: const EdgeInsets.all(4),
                                 child: Text(
-                                  photo.name,
+                                  picture.name,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
@@ -363,8 +372,6 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       }
     }
-
-    // Wrap the content in the Scaffold with Inspector
     return ScaffoldPage(
       header: PageHeader(
         title: Text(node.name),
@@ -374,7 +381,7 @@ class _DashboardPageState extends State<DashboardPage> {
               icon: const Icon(FluentIcons.add),
               label: const Text('New'),
               onPressed: () => AppDialogs.showAddDialog(context, (name, type) {
-                _bloc.addNode(name, type, int.parse(node.id));
+                _bloc.addNode(name, type, node.id);
               }),
             ),
             CommandBarButton(
@@ -403,10 +410,10 @@ class _DashboardPageState extends State<DashboardPage> {
               child: content,
             ),
           ),
-          if (node.type == NodeType.album && selectedPhoto != null)
+          if (node.type == NodeType.album && selectedPicture != null)
             InspectorPanel(
-              photo: selectedPhoto,
-              onClose: () => _bloc.selectPhoto(null),
+              picture: selectedPicture,
+              onClose: () => _bloc.selectPicture(null),
             ),
         ],
       ),
@@ -423,7 +430,7 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 64, color: Colors.grey.withOpacity(0.3)),
+          Icon(icon, size: 64, color: Colors.grey.withValues(alpha: 0.3)),
           const SizedBox(height: 16),
           Text(text, style: const TextStyle(fontSize: 16, color: Colors.grey)),
           const SizedBox(height: 16),
@@ -436,7 +443,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildAddItemCard(HierarchyNode parentNode) {
     return HoverButton(
       onPressed: () => AppDialogs.showAddDialog(context, (name, type) {
-        _bloc.addNode(name, type, int.parse(parentNode.id));
+        _bloc.addNode(name, type, parentNode.id);
       }),
       builder: (p0, states) {
         return Container(
@@ -448,7 +455,7 @@ class _DashboardPageState extends State<DashboardPage> {
               style: BorderStyle.solid,
             ),
             borderRadius: BorderRadius.circular(4),
-            color: states.isHovering
+            color: states.isHovered
                 ? FluentTheme.of(context).resources.subtleFillColorSecondary
                 : Colors.transparent,
           ),
