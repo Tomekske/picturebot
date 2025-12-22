@@ -23,23 +23,19 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  // Using the Bloc (ChangeNotifier)
   final DashboardBloc _bloc = DashboardBloc();
-  int topIndex = 0; // NavigationPane state
+  int topIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    // Listen to Bloc changes
     return AnimatedBuilder(
       animation: _bloc,
       builder: (context, _) {
         final selectedNode = _bloc.selectedNode;
         final selectedPhoto = _bloc.selectedPhoto;
 
-        // Custom Layout for Navigation Body
         final Widget libraryContent = Row(
           children: [
-            // CUSTOM SIDEBAR TREE
             Container(
               width: 300,
               decoration: BoxDecoration(
@@ -83,30 +79,6 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                     ),
                   ),
-                  // Storage indicator
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        top: BorderSide(
-                          color: FluentTheme.of(
-                            context,
-                          ).resources.dividerStrokeColorDefault,
-                        ),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Opslag: 24% Vrij",
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        const SizedBox(height: 8),
-                        ProgressBar(value: 76.0),
-                      ],
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -115,12 +87,12 @@ class _DashboardPageState extends State<DashboardPage> {
             Expanded(
               child: ScaffoldPage(
                 header: PageHeader(
-                  title: Text(selectedNode?.name ?? "Bibliotheek"),
+                  title: Text(selectedNode?.name ?? "Library"),
                   commandBar: CommandBar(
                     primaryItems: [
                       CommandBarButton(
                         icon: const Icon(FluentIcons.add),
-                        label: const Text('Nieuw'),
+                        label: const Text('New'),
                         onPressed: () => AppDialogs.showAddDialog(context, (
                           name,
                           type,
@@ -135,7 +107,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                       CommandBarButton(
                         icon: const Icon(FluentIcons.delete),
-                        label: const Text('Verwijderen'),
+                        label: const Text('Delete'),
                         onPressed: () => AppDialogs.showDeleteDialog(
                           context,
                           selectedNode?.name ?? "Item",
@@ -173,7 +145,7 @@ class _DashboardPageState extends State<DashboardPage> {
           appBar: NavigationAppBar(
             automaticallyImplyLeading: false,
             title: const Text(
-              'FotoPro v3.0',
+              'Picturebot',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             actions: Row(
@@ -199,15 +171,15 @@ class _DashboardPageState extends State<DashboardPage> {
             items: [
               PaneItem(
                 icon: const Icon(FluentIcons.library),
-                title: const Text("Bibliotheek"),
+                title: const Text("Library"),
                 body: libraryContent,
               ),
             ],
             footerItems: [
               PaneItem(
                 icon: const Icon(FluentIcons.settings),
-                title: const Text("Instellingen"),
-                body: const Center(child: Text("Instellingen Pagina")),
+                title: const Text("Settings"),
+                body: const Center(child: Text("TODO")),
                 onTap: () => AppDialogs.showSettingsDialog(context),
               ),
             ],
@@ -225,8 +197,8 @@ class _DashboardPageState extends State<DashboardPage> {
       if (selectedNode.children.isEmpty) {
         return _buildEmptyState(
           icon: FluentIcons.folder_horizontal,
-          text: "Deze map is leeg",
-          actionLabel: "Nieuw Item",
+          text: "Empty Folder",
+          actionLabel: "New Item",
           onAction: () => AppDialogs.showAddDialog(context, (name, type) {
             _bloc.addNode(name, type, selectedNode.id);
           }),
@@ -275,7 +247,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     Text(
                       child.type == NodeType.folder
                           ? "${child.children.length} items"
-                          : "${child.photos.length} foto's",
+                          : "${child.photos.length} Pictures",
                       style: FluentTheme.of(context).typography.caption,
                     ),
                   ],
@@ -298,8 +270,8 @@ class _DashboardPageState extends State<DashboardPage> {
     if (selectedNode.photos.isEmpty) {
       return _buildEmptyState(
         icon: FluentIcons.photo2,
-        text: "Geen foto's in dit album",
-        actionLabel: "Foto's importeren",
+        text: "Albums has no pictures",
+        actionLabel: "Import pictures",
         onAction: () {},
       );
     }
@@ -474,7 +446,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: const Icon(FluentIcons.add),
               ),
               const SizedBox(height: 8),
-              const Text("Nieuw Item"),
+              const Text("New Item"),
             ],
           ),
         );

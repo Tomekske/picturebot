@@ -2,8 +2,8 @@ import 'package:fluent_ui/fluent_ui.dart';
 
 class AppDialogs {
   static Future<void> showAddDialog(
-    BuildContext context, 
-    Function(String name, String type) onAdd
+    BuildContext context,
+    Function(String name, String type) onAdd,
   ) async {
     final nameController = TextEditingController();
     String type = 'ALBUM';
@@ -11,16 +11,16 @@ class AppDialogs {
       context: context,
       builder: (context) {
         return ContentDialog(
-          title: const Text('Nieuw Item'),
+          title: const Text('New Item'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Naam:"),
+              const Text("Name:"),
               const SizedBox(height: 8),
               TextBox(
                 controller: nameController,
-                placeholder: 'Bijv. Vakantie 2024',
+                placeholder: 'Example. Vacation 2024',
               ),
               const SizedBox(height: 16),
               const Text("Type:"),
@@ -37,10 +37,11 @@ class AppDialogs {
           ),
           actions: [
             Button(
-                child: const Text('Annuleren'),
-                onPressed: () => Navigator.pop(context)),
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
+            ),
             FilledButton(
-              child: const Text('Aanmaken'),
+              child: const Text('Create'),
               onPressed: () {
                 onAdd(nameController.text, type);
                 Navigator.pop(context);
@@ -52,21 +53,25 @@ class AppDialogs {
     );
   }
 
-  static Future<void> showDeleteDialog(BuildContext context, String nodeName, VoidCallback onConfirm) async {
+  static Future<void> showDeleteDialog(
+    BuildContext context,
+    String nodeName,
+    VoidCallback onConfirm,
+  ) async {
     await showDialog(
       context: context,
       builder: (context) {
         return ContentDialog(
-          title: const Text('Verwijderen'),
-          content: Text(
-              'Weet je zeker dat je "$nodeName" wilt verwijderen?'),
+          title: const Text('Delete'),
+          content: Text('Are you sure that you want to delete "$nodeName" ?'),
           actions: [
             Button(
-                child: const Text('Annuleren'),
-                onPressed: () => Navigator.pop(context)),
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.pop(context),
+            ),
             FilledButton(
               style: ButtonStyle(backgroundColor: ButtonState.all(Colors.red)),
-              child: const Text('Verwijderen'),
+              child: const Text('Delete'),
               onPressed: () {
                 onConfirm();
                 Navigator.pop(context);
@@ -83,12 +88,13 @@ class AppDialogs {
       context: context,
       builder: (context) {
         return ContentDialog(
-          title: const Text('Instellingen'),
-          content: const Text('Hier komen instellingen...'),
+          title: const Text('Settings'),
+          content: const Text('Todo'),
           actions: [
             Button(
-                child: const Text('Sluiten'),
-                onPressed: () => Navigator.pop(context)),
+              child: const Text('Close'),
+              onPressed: () => Navigator.pop(context),
+            ),
           ],
         );
       },

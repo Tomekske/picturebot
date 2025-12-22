@@ -28,6 +28,7 @@ class _PhotoOrganizerAppState extends State<PhotoOrganizerApp> {
     return FluentApp(
       title: 'Picturebot',
       themeMode: _themeMode,
+      debugShowCheckedModeBanner: false,
       theme: FluentThemeData(
         accentColor: Colors.blue,
         brightness: Brightness.light,
@@ -40,7 +41,10 @@ class _PhotoOrganizerAppState extends State<PhotoOrganizerApp> {
         visualDensity: VisualDensity.standard,
         scaffoldBackgroundColor: const Color(0xFF202020),
       ),
-      home: DashboardPage(toggleTheme: toggleTheme, currentMode: _themeMode),
+      home: DashboardPage(
+        toggleTheme: toggleTheme,
+        currentMode: _themeMode,
+      ),
     );
   }
 }

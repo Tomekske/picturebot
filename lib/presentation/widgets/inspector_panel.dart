@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:intl/intl.dart';
 import '../../data/models/photo.dart';
 import 'section_header.dart';
 import 'info_row.dart';
@@ -16,8 +17,10 @@ class InspectorPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: FluentTheme.of(context).navigationPaneTheme.backgroundColor,
         border: Border(
-            left: BorderSide(
-                color: FluentTheme.of(context).resources.dividerStrokeColorDefault)),
+          left: BorderSide(
+            color: FluentTheme.of(context).resources.dividerStrokeColorDefault,
+          ),
+        ),
       ),
       child: Column(
         children: [
@@ -25,19 +28,24 @@ class InspectorPanel extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               border: Border(
-                  bottom: BorderSide(
-                      color: FluentTheme.of(context)
-                          .resources
-                          .dividerStrokeColorDefault)),
+                bottom: BorderSide(
+                  color: FluentTheme.of(
+                    context,
+                  ).resources.dividerStrokeColorDefault,
+                ),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Informatie",
-                    style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  "Information",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 IconButton(
-                    icon: const Icon(FluentIcons.chrome_close),
-                    onPressed: onClose),
+                  icon: const Icon(FluentIcons.chrome_close),
+                  onPressed: onClose,
+                ),
               ],
             ),
           ),
@@ -50,16 +58,25 @@ class InspectorPanel extends StatelessWidget {
                   height: 180,
                   color: Colors.black,
                   child: const Center(
-                    child:
-                    Icon(FluentIcons.photo2, size: 48, color: Colors.grey),
+                    child: Icon(
+                      FluentIcons.photo2,
+                      size: 48,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                Text(photo.name,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 16)),
-                Text("${photo.type} • ${photo.exif['Size']}",
-                    style: const TextStyle(color: Colors.grey)),
+                Text(
+                  photo.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  "${photo.type} • ${photo.exif['Size']}",
+                  style: const TextStyle(color: Colors.grey),
+                ),
 
                 const SizedBox(height: 24),
 
@@ -69,7 +86,7 @@ class InspectorPanel extends StatelessWidget {
                     children: [
                       Icon(FluentIcons.full_screen, size: 16),
                       SizedBox(width: 8),
-                      Text("Volledig Scherm"),
+                      Text("Full Screen"),
                     ],
                   ),
                   onPressed: () {
@@ -80,41 +97,55 @@ class InspectorPanel extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 // EXIF
-                const SectionHeader(title: "GEGEVENS"),
+                const SectionHeader(title: "Information"),
                 InfoRow(
-                    label: "Datum",
-                    value:
-                    "${photo.date.day}/${photo.date.month}/${photo.date.year}"),
+                  label: "Date",
+                  value: DateFormat('yyyy-MM-dd').format(photo.date),
+                ),
+
+                InfoRow(
+                  label: "Time",
+                  value: DateFormat('HH:mm').format(photo.date),
+                ),
 
                 const SizedBox(height: 16),
                 const SectionHeader(title: "CAMERA"),
-                InfoRow(label: "Toestel", value: photo.exif['Camera'] ?? '-'),
+                InfoRow(label: "Model", value: photo.exif['Camera'] ?? '-'),
                 InfoRow(label: "Lens", value: photo.exif['Lens'] ?? '-'),
 
                 const SizedBox(height: 16),
-                const SectionHeader(title: "INSTELLINGEN"),
+                const SectionHeader(title: "SETTINGS"),
                 Row(
                   children: [
                     Expanded(
-                        child: InfoRow(
-                            label: "ISO", value: photo.exif['ISO'] ?? '-')),
+                      child: InfoRow(
+                        label: "ISO",
+                        value: photo.exif['ISO'] ?? '-',
+                      ),
+                    ),
                     Expanded(
-                        child: InfoRow(
-                            label: "Diafragma",
-                            value: photo.exif['Aperture'] ?? '-')),
+                      child: InfoRow(
+                        label: "Aperture",
+                        value: photo.exif['Aperture'] ?? '-',
+                      ),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
                     Expanded(
-                        child: InfoRow(
-                            label: "Sluitertijd",
-                            value: photo.exif['Shutter'] ?? '-')),
+                      child: InfoRow(
+                        label: "Shutter",
+                        value: photo.exif['Shutter'] ?? '-',
+                      ),
+                    ),
                     Expanded(
-                        child: InfoRow(
-                            label: "Resolutie",
-                            value: photo.exif['Dimensions'] ?? '-')),
+                      child: InfoRow(
+                        label: "Dimensions",
+                        value: photo.exif['Dimensions'] ?? '-',
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -125,25 +156,34 @@ class InspectorPanel extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               border: Border(
-                  top: BorderSide(
-                      color: FluentTheme.of(context)
-                          .resources
-                          .dividerStrokeColorDefault)),
+                top: BorderSide(
+                  color: FluentTheme.of(
+                    context,
+                  ).resources.dividerStrokeColorDefault,
+                ),
+              ),
             ),
             child: Row(
               children: [
                 Expanded(
-                    child: Button(
-                        child: const Text("Bewerken"), onPressed: () {})),
+                  child: Button(
+                    child: const Text("Edit"),
+                    onPressed: () {},
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
-                    child: Button(
-                        child:  Text("Verwijderen",
-                            style: TextStyle(color: Colors.red)),
-                        onPressed: () {})),
+                  child: Button(
+                    child: Text(
+                      "Delete",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    onPressed: () {},
+                  ),
+                ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
