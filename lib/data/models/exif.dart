@@ -44,7 +44,6 @@ class Exif extends Equatable {
     camera,
     lens,
     iso,
-    iso,
     aperture,
     shutter,
     dimensions,

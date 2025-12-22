@@ -93,13 +93,12 @@ class InspectorPanel extends StatelessWidget {
                     ],
                   ),
                   onPressed: () {
-                    // Launch lightbox logic
+                    // TODO
                   },
                 ),
 
                 const SizedBox(height: 24),
 
-                // EXIF
                 const SectionHeader(title: "Information"),
                 InfoRow(
                   label: "Date",
@@ -170,7 +169,9 @@ class InspectorPanel extends StatelessWidget {
                 Expanded(
                   child: Button(
                     child: const Text("Edit"),
-                    onPressed: () {},
+                    onPressed: () {
+                      // TODO
+                    },
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -180,7 +181,9 @@ class InspectorPanel extends StatelessWidget {
                       "Delete",
                       style: TextStyle(color: Colors.red),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      // TODO
+                    },
                   ),
                 ),
               ],

@@ -42,7 +42,7 @@ class DashboardBloc extends ChangeNotifier {
     notifyListeners();
   }
 
-  HierarchyNode? findNode(HierarchyNode root, String id) {
+  HierarchyNode? findNode(HierarchyNode root, int id) {
     if (root.id == id) return root;
     for (final child in root.children) {
       final found = findNode(child, id);

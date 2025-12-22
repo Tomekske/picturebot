@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:intl/intl.dart';
 import 'package:picturebot/data/enums/picture_status.dart';
 import '../../data/models/hierarchy_node.dart';
 import '../../logic/bloc/dashboard_bloc.dart';
@@ -140,7 +141,6 @@ class _DashboardPageState extends State<DashboardPage> {
     return items;
   }
 
-  // --- Helper to Find Index for Selection ---
   int _calculateSelectedIndex(
     List<NavigationPaneItem> items,
     int? targetId,
@@ -149,25 +149,20 @@ class _DashboardPageState extends State<DashboardPage> {
 
     int index = 0;
     for (final item in items) {
-      // We only care about selectable PaneItems, ignoring Headers/Separators for index count
-      // BUT NavigationView counts Headers/Separators in the 'items' list index usually?
-      // Actually, FluentUI 'selected' index usually corresponds to the visual order of *selectable* items
-      // or the raw index in the 'items' array.
-      // Safe approach: Check the key.
-      if (item is PaneItem && item.key == ValueKey(targetId)) {
-        return index;
+      if (item is PaneItem) {
+        if (item.key == ValueKey(targetId)) {
+          return index;
+        }
+        index++;
       }
-      index++;
     }
-    return 0; // Default to first item if not found
+    return 0;
   }
 
-  // --- MAIN CONTENT BUILDER ---
   Widget _buildMainContent(
     HierarchyNode? nodeToRender,
     Picture? selectedPicture,
   ) {
-    // Use the passed node, fallback to BLoC if null (though it shouldn't be)
     final node = nodeToRender;
 
     if (node == null) return const SizedBox.shrink();
@@ -243,10 +238,12 @@ class _DashboardPageState extends State<DashboardPage> {
       // CASE: ALBUM VIEW
       final Map<String, List<Picture>> grouped = {};
       for (var p in node.pictures) {
-        final key = "${p.date.day}-${p.date.month}-${p.date.year}";
+        final key = DateFormat('yyyy-MM-dd').format(p.date);
         if (!grouped.containsKey(key)) grouped[key] = [];
         grouped[key]!.add(p);
       }
+
+      final sortedKeys = grouped.keys.toList()..sort();
 
       if (node.pictures.isEmpty) {
         content = _buildEmptyState(
@@ -257,9 +254,9 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       } else {
         content = ListView.builder(
-          itemCount: grouped.keys.length,
+          itemCount: sortedKeys.length,
           itemBuilder: (context, index) {
-            final dateKey = grouped.keys.elementAt(index);
+            final dateKey = sortedKeys.elementAt(index);
             final pictures = grouped[dateKey]!;
 
             return Column(
