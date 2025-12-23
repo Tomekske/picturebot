@@ -1,12 +1,24 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:picturebot/data/services/backend_service.dart';
+
+import 'data/repositories/mock_repository.dart';
 import 'presentation/pages/dashboard_page.dart';
 
 void main() {
-  runApp(const PhotoOrganizerApp());
+  final mockRepository = MockRepository();
+  final service = BackendService(mockRepository);
+
+  runApp(PhotoOrganizerApp(backendService: service));
 }
 
 class PhotoOrganizerApp extends StatefulWidget {
-  const PhotoOrganizerApp({super.key});
+  final BackendService _backendService;
+
+  const PhotoOrganizerApp({
+    super.key,
+    required BackendService backendService,
+  }) : _backendService = backendService;
 
   @override
   State<PhotoOrganizerApp> createState() => _PhotoOrganizerAppState();
@@ -25,25 +37,28 @@ class _PhotoOrganizerAppState extends State<PhotoOrganizerApp> {
 
   @override
   Widget build(BuildContext context) {
-    return FluentApp(
-      title: 'Picturebot',
-      themeMode: _themeMode,
-      debugShowCheckedModeBanner: false,
-      theme: FluentThemeData(
-        accentColor: Colors.blue,
-        brightness: Brightness.light,
-        visualDensity: VisualDensity.standard,
-        scaffoldBackgroundColor: const Color(0xFFF3F3F3),
-      ),
-      darkTheme: FluentThemeData(
-        accentColor: Colors.blue,
-        brightness: Brightness.dark,
-        visualDensity: VisualDensity.standard,
-        scaffoldBackgroundColor: const Color(0xFF202020),
-      ),
-      home: DashboardPage(
-        toggleTheme: toggleTheme,
-        currentMode: _themeMode,
+    return RepositoryProvider.value(
+      value: widget._backendService,
+      child: FluentApp(
+        title: 'Picturebot',
+        themeMode: _themeMode,
+        debugShowCheckedModeBanner: false,
+        theme: FluentThemeData(
+          accentColor: Colors.blue,
+          brightness: Brightness.light,
+          visualDensity: VisualDensity.standard,
+          scaffoldBackgroundColor: const Color(0xFFF3F3F3),
+        ),
+        darkTheme: FluentThemeData(
+          accentColor: Colors.blue,
+          brightness: Brightness.dark,
+          visualDensity: VisualDensity.standard,
+          scaffoldBackgroundColor: const Color(0xFF202020),
+        ),
+        home: DashboardPage(
+          toggleTheme: toggleTheme,
+          currentMode: _themeMode,
+        ),
       ),
     );
   }

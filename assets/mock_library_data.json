@@ -1,0 +1,78 @@
+{
+  "id": 1,
+  "name": "Library",
+  "type": "folder",
+  "parent_id": null,
+  "children": [
+    {
+      "id": 2,
+      "name": "The United States",
+      "type": "folder",
+      "parent_id": 1,
+      "children": [
+        {
+          "id": 3,
+          "name": "California",
+          "type": "folder",
+          "parent_id": 2,
+          "children": [
+            {
+              "id": 4,
+              "name": "Los Angeles",
+              "type": "album",
+              "parent_id": 3,
+              "children": [],
+              "pictures": [
+                {
+                  "id": "la_0",
+                  "name": "DSC_1000.JPG",
+                  "url": "https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg?_gl=1*rtgo3o*_ga*NjExNDQwNTgxLjE3NjY0Nzk4Nzc.*_ga_8JE65Q40S6*czE3NjY0Nzk4NzYkbzEkZzEkdDE3NjY0Nzk4OTYkajQwJGwwJGgw",
+                  "date": "2024-12-05T10:00:00.000000",
+                  "type": "jpg",
+                  "status": "untagged",
+                  "color_label": "none",
+                  "exif": {
+                    "camera": "Sony A6600",
+                    "lens": "Sony E 16-50mm F/3.5-5.6 PZ OSS II",
+                    "iso": "100",
+                    "aperture": "f/2.8",
+                    "shutter": "1/250",
+                    "dimensions": "6000 x 4000",
+                    "size": "24.5 MB"
+                  }
+                }
+              ]
+            },
+            {
+              "id": 5,
+              "name": "San Francisco",
+              "type": "album",
+              "parent_id": 3,
+              "children": [],
+              "pictures": []
+            }
+          ],
+          "pictures": []
+        },
+        {
+          "id": 6,
+          "name": "Florida",
+          "type": "folder",
+          "parent_id": 2,
+          "children": [],
+          "pictures": []
+        }
+      ],
+      "pictures": []
+    },
+    {
+      "id": 7,
+      "name": "Europe",
+      "type": "folder",
+      "parent_id": 1,
+      "children": [],
+      "pictures": []
+    }
+  ],
+  "pictures": []
+}

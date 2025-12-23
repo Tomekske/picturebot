@@ -1,20 +1,27 @@
 import 'package:flutter/foundation.dart';
+
 import '../../data/models/hierarchy_node.dart';
 import '../../data/models/picture.dart';
-import '../../data/repositories/mock_repository.dart';
+import '../../data/services/backend_service.dart';
 
 class DashboardBloc extends ChangeNotifier {
-  HierarchyNode _rootNode;
+  final BackendService _backendService;
+  HierarchyNode? _rootNode;
   HierarchyNode? _selectedNode;
   Picture? _selectedPicture;
 
-  DashboardBloc() : _rootNode = MockRepository.getInitialData() {
-    _rootNode = MockRepository.getInitialData();
+  DashboardBloc(this._backendService) {
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    _rootNode = await _backendService.getLibraryData();
     _selectedNode = _rootNode;
+    notifyListeners();
   }
 
   // Getters
-  HierarchyNode get rootNode => _rootNode;
+  HierarchyNode? get rootNode => _rootNode;
   HierarchyNode? get selectedNode => _selectedNode;
   Picture? get selectedPicture => _selectedPicture;
 
