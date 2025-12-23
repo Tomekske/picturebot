@@ -12,14 +12,13 @@ class MockRepository {
   ///
   /// Delegates the call to [MockBackendApi.getLibraryData].
   /// Returns a [Future] that resolves to the root [HierarchyNode].
-  static Future<HierarchyNode> getInitialData() async {
-    final payload = await MockBackendApi.getLibraryData();
-
+  Future<HierarchyNode> getInitialData() async {
     try {
-      return HierarchyNode.fromJson(payload);
+      final response = await MockBackendApi.getLibraryData();
+      return HierarchyNode.fromJson(response);
     } catch (e) {
       if (kDebugMode) {
-        print("Error converting data: $e");
+        print("Error loading library data: $e");
       }
 
       rethrow;

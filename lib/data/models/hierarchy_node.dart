@@ -1,7 +1,9 @@
+import 'package:equatable/equatable.dart';
+
 import '../enums/node_type.dart';
 import 'picture.dart';
 
-class HierarchyNode {
+class HierarchyNode extends Equatable {
   final int id;
   final String name;
   final NodeType type;
@@ -62,4 +64,15 @@ class HierarchyNode {
       'pictures': pictures.map((pic) => pic.toJson()).toList(),
     };
   }
+
+  @override
+  List<Object?> get props => [
+    id,
+    name,
+    type,
+    parentId,
+    type,
+    children,
+    pictures,
+  ];
 }

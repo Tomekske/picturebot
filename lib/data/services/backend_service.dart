@@ -21,6 +21,6 @@ class BackendService {
   /// This method triggers the data fetching process from the underlying repository.
   /// Returns a [Future] that resolves to the root [HierarchyNode] of the collection.
   Future<HierarchyNode> getLibraryData() {
-    return MockRepository.getInitialData();
+    return _repository.getInitialData();
   }
 }
