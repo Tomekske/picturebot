@@ -71,7 +71,6 @@ class HierarchyNode extends Equatable {
     name,
     type,
     parentId,
-    type,
     children,
     pictures,
   ];
