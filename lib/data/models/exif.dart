@@ -49,4 +49,28 @@ class Exif extends Equatable {
     dimensions,
     size,
   ];
+
+  factory Exif.fromJson(Map<String, dynamic> json) {
+    return Exif(
+      camera: json['camera'] as String?,
+      lens: json['lens'] as String?,
+      iso: json['iso'] as String?,
+      aperture: json['aperture'] as String?,
+      shutter: json['shutter'] as String?,
+      dimensions: json['dimensions'] as String?,
+      size: json['size'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'camera': camera,
+      'lens': lens,
+      'iso': iso,
+      'aperture': aperture,
+      'shutter': shutter,
+      'dimensions': dimensions,
+      'size': size,
+    };
+  }
 }

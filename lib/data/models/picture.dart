@@ -1,6 +1,7 @@
+import 'package:equatable/equatable.dart';
 import 'package:picturebot/data/enums/color_label.dart';
 import 'package:picturebot/data/enums/picture_status.dart';
-import 'package:equatable/equatable.dart';
+
 import '../enums/picture_type.dart';
 import 'exif.dart';
 
@@ -45,6 +46,36 @@ class Picture extends Equatable {
       colorLabel: colorLabel ?? this.colorLabel,
       exif: exif ?? this.exif,
     );
+  }
+
+  factory Picture.fromJson(Map<String, dynamic> json) {
+    return Picture(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      url: json['url'] as String,
+      date: DateTime.parse(json['date'] as String),
+      type: PictureType.values.byName(json['type'] as String),
+      status: json['status'] != null
+          ? PictureStatus.values.byName(json['status'] as String)
+          : PictureStatus.untagged,
+      colorLabel: json['color_label'] != null
+          ? ColorLabel.values.byName(json['color_label'] as String)
+          : ColorLabel.none,
+      exif: Exif.fromJson(json['exif'] as Map<String, dynamic>),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'url': url,
+      'date': date.toIso8601String(),
+      'type': type.name,
+      'status': status.name,
+      'color_label': colorLabel.name,
+      'exif': exif.toJson(),
+    };
   }
 
   @override

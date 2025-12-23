@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; // 1. Add this import
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:picturebot/data/services/backend_service.dart';
+
 import 'data/repositories/mock_repository.dart';
 import 'presentation/pages/dashboard_page.dart';
 

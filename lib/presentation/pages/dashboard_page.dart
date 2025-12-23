@@ -2,14 +2,15 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:picturebot/data/enums/picture_status.dart';
-import '../../data/services/backend_service.dart';
-import '../../data/models/hierarchy_node.dart';
-import '../../logic/bloc/dashboard_bloc.dart';
-import '../../data/models/picture.dart';
+
 import '../../data/enums/node_type.dart';
+import '../../data/models/hierarchy_node.dart';
+import '../../data/models/picture.dart';
+import '../../data/services/backend_service.dart';
+import '../../logic/bloc/dashboard_bloc.dart';
+import '../dialogs/app_dialogs.dart';
 import '../widgets/inspector_panel.dart';
 import '../widgets/status_icon.dart';
-import '../dialogs/app_dialogs.dart';
 
 class DashboardPage extends StatefulWidget {
   final VoidCallback toggleTheme;
@@ -47,12 +48,18 @@ class _DashboardPageState extends State<DashboardPage> {
     return AnimatedBuilder(
       animation: _bloc,
       builder: (context, _) {
+        if (_bloc.rootNode == null) {
+          return const ScaffoldPage(
+            content: Center(child: ProgressRing()),
+          );
+        }
+
         final selectedNode = _bloc.selectedNode;
 
         // Generate a FLAT list of Navigation Items with visual indentation
         final List<NavigationPaneItem> navItems = [
           PaneItemHeader(header: const Text("LIBRARY")),
-          ..._buildFlatPaneItems(_bloc.rootNode),
+          ..._buildFlatPaneItems(_bloc.rootNode!),
         ];
 
         // Calculate the index for the NavigationPane to update the highlight
