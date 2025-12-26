@@ -1,6 +1,6 @@
 import '../models/hierarchy_node.dart';
 import '../models/settings.dart';
-import '../repositories/mock_repository.dart';
+import '../repositories/backend_repository.dart';
 
 /// A service layer responsible for handling business logic related to the backend.
 ///
@@ -9,11 +9,11 @@ import '../repositories/mock_repository.dart';
 /// the UI to request "Library Data" without knowing if it comes from a
 /// local database, a mock file, or a remote REST API.
 class BackendService {
-  final MockRepository _repository;
+  final BackendRepository _repository;
 
   /// Creates a new instance of [BackendService].
   ///
-  /// Requires a [MockRepository] to be injected. This dependency injection
+  /// Requires a [BackendRepository] to be injected. This dependency injection
   /// allows for easier testing and swapping of data sources in the future.
   BackendService(this._repository);
 

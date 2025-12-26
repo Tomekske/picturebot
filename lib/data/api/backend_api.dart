@@ -2,17 +2,20 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 
-/// A simulated backend server that generates dummy data and mimics network behavior.
+/// A client service for communicating with the local backend server.
 ///
-/// This class is responsible for creating a realistic development environment
-/// by injecting artificial latency and generating random content for testing UI states.
-class MockBackendApi {
-  /// Simulates an asynchronous network request to fetch the library tree.
+/// This class handles HTTP requests to `http://localhost:8080` to fetch
+/// library hierarchy data, retrieve user settings, and persist configuration changes.
+class BackendApi {
+  /// Fetches the library hierarchy tree from the backend.
   ///
-  /// Returns a hardcoded tree structure containing Folders and Albums.
+  /// Performs a GET request to the `/hierarchy` endpoint.
+  ///
+  /// Returns a [List] of [Map] objects representing the folder and album structure.
+  /// If the request fails or an exception occurs, it logs the error in debug mode
+  /// and returns an empty list.
   static Future<List<Map<String, dynamic>>> getLibraryData() async {
     try {
       final String baseUrl = 'http://localhost:8080';
@@ -38,9 +41,12 @@ class MockBackendApi {
     }
   }
 
-  /// Simulates fetching the user configuration file from the server.
+  /// Fetches the current user configuration from the server.
   ///
-  /// Returns a [Map] representing the JSON configuration.
+  /// Performs a GET request to the `/settings` endpoint.
+  ///
+  /// Returns a [Map] containing the JSON configuration data.
+  /// Throws an [Exception] if the network request fails or the status code is not 200.
   static Future<Map<String, dynamic>> getSettings() async {
     try {
       final Uri uri = Uri.parse('http://localhost:8080/settings');
@@ -61,12 +67,12 @@ class MockBackendApi {
     }
   }
 
-  /// Sends updated settings to the local backend server.
+  /// Persists updated settings to the backend server.
   ///
-  /// Performs an HTTP POST request to `http://localhost:8080/settings` with
-  /// the [newSettings] encoded as a JSON body.
+  /// Performs an HTTP POST request to `/settings` with the [newSettings]
+  /// encoded as a JSON body.
   ///
-  /// Expects a 200 OK or 201 Created status code upon success.
+  /// Throws an [Exception] if the server does not return a 200 OK or 201 Created status.
   static Future<void> updateSettings(Map<String, dynamic> newSettings) async {
     try {
       final Uri uri = Uri.parse('http://localhost:8080/settings');
