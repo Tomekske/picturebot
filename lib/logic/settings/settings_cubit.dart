@@ -24,16 +24,26 @@ class SettingsCubit extends Cubit<SettingsState> {
   }
 
   /// Updates the theme mode and emits a new state.
-  void updateTheme(ThemeMode mode) {
-    final newSettings = state.settings.copyWith(themeMode: mode);
-    emit(SettingsLoaded(newSettings));
-    // TODO: Call _backendService.saveSettings(newSettings) to persist
+  Future<void> updateTheme(ThemeMode mode) async {
+    try {
+      final newSettings = state.settings.copyWith(themeMode: mode);
+      emit(SettingsLoaded(newSettings));
+
+      // TODO: Call _backendService.saveSettings(newSettings) to persist
+    } catch (e) {
+      // Optionally handle save failure
+    }
   }
 
   /// Updates the library path and emits a new state.
   void updateLibraryLocation(String path) {
-    final newSettings = state.settings.copyWith(libraryPath: path);
-    emit(SettingsLoaded(newSettings));
-    // TODO: Call _backendService.saveSettings(newSettings) to persist
+    try {
+      final newSettings = state.settings.copyWith(libraryPath: path);
+      emit(SettingsLoaded(newSettings));
+
+      // TODO: Call _backendService.saveSettings(newSettings) to persist
+    } catch (e) {
+      // Optionally handle save failure
+    }
   }
 }

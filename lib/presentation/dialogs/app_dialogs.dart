@@ -58,21 +58,22 @@ class AppDialogs {
   }
 
   static Future<void> showSettingsDialog(BuildContext context) async {
+    final settingsCubit = context.read<SettingsCubit>();
     await showDialog(
       context: context,
       dismissWithEsc: true,
       builder: (dialogContext) {
         return BlocBuilder<SettingsCubit, SettingsState>(
-          bloc: context.read<SettingsCubit>(),
+          bloc: settingsCubit,
           builder: (context, state) {
             return SettingsDialog(
               currentMode: state.settings.themeMode,
               onThemeChanged: (mode) {
-                context.read<SettingsCubit>().updateTheme(mode);
+                settingsCubit.updateTheme(mode);
               },
               currentLibraryPath: state.settings.libraryPath,
               onLibraryPathChanged: (newPath) {
-                context.read<SettingsCubit>().updateLibraryLocation(newPath);
+                settingsCubit.updateLibraryLocation(newPath);
               },
             );
           },

@@ -21,11 +21,19 @@ class SettingsDialog extends StatefulWidget {
 
 class _SettingsDialogState extends State<SettingsDialog> {
   late String _libraryPath;
+  late TextEditingController _libraryPathController;
 
   @override
   void initState() {
     super.initState();
     _libraryPath = widget.currentLibraryPath;
+    _libraryPathController = TextEditingController(text: _libraryPath);
+  }
+
+  @override
+  void dispose() {
+    _libraryPathController.dispose();
+    super.dispose();
   }
 
   Future<void> _pickLibraryPath() async {
@@ -33,6 +41,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
     if (selectedDirectory != null) {
       setState(() {
         _libraryPath = selectedDirectory;
+        _libraryPathController.text = selectedDirectory;
       });
       widget.onLibraryPathChanged(selectedDirectory);
     }
@@ -89,7 +98,7 @@ class _SettingsDialogState extends State<SettingsDialog> {
                 child: TextBox(
                   readOnly: true,
                   placeholder: "Select a folder on your HDD...",
-                  controller: TextEditingController(text: _libraryPath),
+                  controller: _libraryPathController,
                 ),
               ),
               const SizedBox(width: 8),

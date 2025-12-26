@@ -11,7 +11,7 @@ import 'package:flutter/services.dart';
 class MockBackendApi {
   /// Simulates an asynchronous network request to fetch the library tree.
   ///
-  /// Includes a 1.5-second artificial delay to test loading states (e.g., [ProgressRing]).
+  /// Includes a 1.5-second artificial delay to test loading states.
   ///
   /// Returns a hardcoded tree structure containing Folders and Albums.
   static Future<Map<String, dynamic>> getLibraryData() async {
@@ -34,8 +34,7 @@ class MockBackendApi {
 
   /// Simulates fetching the user configuration file from the server.
   ///
-  /// Includes a 1.5-second artificial delay to simulate a fast network response.
-  /// Reads the `assets/mock_settings_data.json` file to mimic a database read.
+  /// Includes a 1.5-second artificial delay to test loading states.
   ///
   /// Returns a [Map] representing the JSON configuration.
   static Future<Map<String, dynamic>> getSettings() async {

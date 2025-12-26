@@ -41,9 +41,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Access settings state
-    final settingsState = context.watch<SettingsCubit>().state;
-    final currentMode = settingsState.settings.themeMode;
+    context.watch<SettingsCubit>();
 
     return AnimatedBuilder(
       animation: _bloc,
