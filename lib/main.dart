@@ -1,8 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:picturebot/data/services/backend_service.dart';
-
 import 'data/repositories/mock_repository.dart';
+import 'logic/settings/settings_cubit.dart';
 import 'presentation/pages/dashboard_page.dart';
 
 void main() {
@@ -12,7 +12,7 @@ void main() {
   runApp(PhotoOrganizerApp(backendService: service));
 }
 
-class PhotoOrganizerApp extends StatefulWidget {
+class PhotoOrganizerApp extends StatelessWidget {
   final BackendService _backendService;
 
   const PhotoOrganizerApp({
@@ -21,43 +21,34 @@ class PhotoOrganizerApp extends StatefulWidget {
   }) : _backendService = backendService;
 
   @override
-  State<PhotoOrganizerApp> createState() => _PhotoOrganizerAppState();
-}
-
-class _PhotoOrganizerAppState extends State<PhotoOrganizerApp> {
-  ThemeMode _themeMode = ThemeMode.light;
-
-  void toggleTheme() {
-    setState(() {
-      _themeMode = _themeMode == ThemeMode.light
-          ? ThemeMode.dark
-          : ThemeMode.light;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return RepositoryProvider.value(
-      value: widget._backendService,
-      child: FluentApp(
-        title: 'Picturebot',
-        themeMode: _themeMode,
-        debugShowCheckedModeBanner: false,
-        theme: FluentThemeData(
-          accentColor: Colors.blue,
-          brightness: Brightness.light,
-          visualDensity: VisualDensity.standard,
-          scaffoldBackgroundColor: const Color(0xFFF3F3F3),
-        ),
-        darkTheme: FluentThemeData(
-          accentColor: Colors.blue,
-          brightness: Brightness.dark,
-          visualDensity: VisualDensity.standard,
-          scaffoldBackgroundColor: const Color(0xFF202020),
-        ),
-        home: DashboardPage(
-          toggleTheme: toggleTheme,
-          currentMode: _themeMode,
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider.value(value: _backendService),
+      ],
+      child: BlocProvider(
+        create: (context) => SettingsCubit(_backendService)..loadSettings(),
+        child: BlocBuilder<SettingsCubit, SettingsState>(
+          builder: (context, state) {
+            return FluentApp(
+              title: 'Picturebot',
+              themeMode: state.settings.themeMode,
+              debugShowCheckedModeBanner: false,
+              theme: FluentThemeData(
+                accentColor: Colors.blue,
+                brightness: Brightness.light,
+                visualDensity: VisualDensity.standard,
+                scaffoldBackgroundColor: const Color(0xFFF3F3F3),
+              ),
+              darkTheme: FluentThemeData(
+                accentColor: Colors.blue,
+                brightness: Brightness.dark,
+                visualDensity: VisualDensity.standard,
+                scaffoldBackgroundColor: const Color(0xFF202020),
+              ),
+              home: DashboardPage(),
+            );
+          },
         ),
       ),
     );

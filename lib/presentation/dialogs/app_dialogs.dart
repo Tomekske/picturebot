@@ -1,4 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:picturebot/presentation/dialogs/settings_dialog.dart';
+
+import '../../logic/settings/settings_cubit.dart';
 
 class AppDialogs {
   static Future<void> showAddDialog(
@@ -53,6 +57,30 @@ class AppDialogs {
     );
   }
 
+  static Future<void> showSettingsDialog(BuildContext context) async {
+    await showDialog(
+      context: context,
+      dismissWithEsc: true,
+      builder: (dialogContext) {
+        return BlocBuilder<SettingsCubit, SettingsState>(
+          bloc: context.read<SettingsCubit>(),
+          builder: (context, state) {
+            return SettingsDialog(
+              currentMode: state.settings.themeMode,
+              onThemeChanged: (mode) {
+                context.read<SettingsCubit>().updateTheme(mode);
+              },
+              currentLibraryPath: state.settings.libraryPath,
+              onLibraryPathChanged: (newPath) {
+                context.read<SettingsCubit>().updateLibraryLocation(newPath);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   static Future<void> showDeleteDialog(
     BuildContext context,
     String nodeName,
@@ -78,24 +106,6 @@ class AppDialogs {
                 onConfirm();
                 Navigator.pop(context);
               },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  static Future<void> showSettingsDialog(BuildContext context) async {
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return ContentDialog(
-          title: const Text('Settings'),
-          content: const Text('Todo'),
-          actions: [
-            Button(
-              child: const Text('Close'),
-              onPressed: () => Navigator.pop(context),
             ),
           ],
         );

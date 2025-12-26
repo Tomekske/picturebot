@@ -1,4 +1,5 @@
 import '../models/hierarchy_node.dart';
+import '../models/settings.dart';
 import '../repositories/mock_repository.dart';
 
 /// A service layer responsible for handling business logic related to the backend.
@@ -22,5 +23,15 @@ class BackendService {
   /// Returns a [Future] that resolves to the root [HierarchyNode] of the collection.
   Future<HierarchyNode> getLibraryData() {
     return _repository.getInitialData();
+  }
+
+  /// Retrieves the user's application configuration settings.
+  ///
+  /// This includes preferences such as the active theme (Light/Dark) and the
+  /// file system path for the photo library.
+  ///
+  /// Returns a [Future] that resolves to a [Settings] object.
+  Future<Settings> loadSettings() {
+    return _repository.getSettings();
   }
 }
