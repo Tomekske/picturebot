@@ -1,13 +1,13 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:picturebot/data/services/backend_service.dart';
-import 'data/repositories/mock_repository.dart';
+import 'data/repositories/backend_repository.dart';
 import 'logic/settings/settings_cubit.dart';
 import 'presentation/pages/dashboard_page.dart';
 
 void main() {
-  final mockRepository = MockRepository();
-  final service = BackendService(mockRepository);
+  final repository = BackendRepository();
+  final service = BackendService(repository);
 
   runApp(PhotoOrganizerApp(backendService: service));
 }

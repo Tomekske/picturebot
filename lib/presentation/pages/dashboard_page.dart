@@ -14,9 +14,7 @@ import '../widgets/inspector_panel.dart';
 import '../widgets/status_icon.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({
-    super.key,
-  });
+  const DashboardPage({super.key});
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -80,11 +78,9 @@ class _DashboardPageState extends State<DashboardPage> {
               PaneItem(
                 icon: const Icon(FluentIcons.settings),
                 title: const Text("Settings"),
-                body: const Center(child: Text("Settings Page")),
+                body: const SizedBox.shrink(),
                 onTap: () {
-                  AppDialogs.showSettingsDialog(
-                    context,
-                  );
+                  AppDialogs.showSettingsDialog(context);
                 },
               ),
             ],
@@ -94,14 +90,13 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // --- Helper to Recursive Build Flat Items with Indentation ---
   List<NavigationPaneItem> _buildFlatPaneItems(
     HierarchyNode node, {
     int depth = 0,
   }) {
     List<NavigationPaneItem> items = [];
 
-    // 1. Create the item for the current node
+    // Create the item for the current node
     items.add(
       PaneItem(
         key: ValueKey(node.id),
@@ -130,7 +125,7 @@ class _DashboardPageState extends State<DashboardPage> {
       ),
     );
 
-    // 2. Recursively add children to the same flat list
+    // Recursively add children to the same flat list
     for (var child in node.children) {
       items.addAll(_buildFlatPaneItems(child, depth: depth + 1));
     }
@@ -297,6 +292,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     return GestureDetector(
                       onTap: () => _bloc.selectPicture(picture),
                       child: Container(
+                        clipBehavior: Clip.antiAlias,
                         decoration: BoxDecoration(
                           color: FluentTheme.of(
                             context,
@@ -310,13 +306,24 @@ class _DashboardPageState extends State<DashboardPage> {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Stack(
+                          fit: StackFit.expand,
                           children: [
-                            Center(
-                              child: Icon(
-                                FluentIcons.photo2,
-                                size: 32,
-                                color: Colors.grey.withValues(alpha: 0.5),
-                              ),
+                            Image.network(
+                              picture.url,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Center(
+                                  child: Icon(
+                                    FluentIcons.error,
+                                    color: Colors.red,
+                                  ),
+                                );
+                              },
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return const Center(child: ProgressRing());
+                                  },
                             ),
                             if (picture.status == PictureStatus.picked)
                               Positioned(
@@ -341,8 +348,11 @@ class _DashboardPageState extends State<DashboardPage> {
                               left: 0,
                               right: 0,
                               child: Container(
-                                color: Colors.black.withValues(alpha: 0.5),
-                                padding: const EdgeInsets.all(4),
+                                color: Colors.black.withValues(alpha: 0.6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 2,
+                                ),
                                 child: Text(
                                   picture.name,
                                   style: const TextStyle(
