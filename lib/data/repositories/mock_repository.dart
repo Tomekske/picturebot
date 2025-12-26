@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../api/mock_backend_api.dart';
+import '../enums/node_type.dart';
 import '../models/hierarchy_node.dart';
 import '../models/settings.dart';
 
@@ -15,14 +16,35 @@ class MockRepository {
   /// Returns a [Future] that resolves to the root [HierarchyNode].
   Future<HierarchyNode> getInitialData() async {
     try {
-      final response = await MockBackendApi.getLibraryData();
-      return HierarchyNode.fromJson(response);
+      final dynamic response = await MockBackendApi.getLibraryData();
+
+      List<HierarchyNode> children = [];
+
+      if (response is List) {
+        children = response
+            .map((json) => HierarchyNode.fromJson(json as Map<String, dynamic>))
+            .toList();
+      } else if (response is Map) {
+        return HierarchyNode.fromJson(response as Map<String, dynamic>);
+      }
+
+      return HierarchyNode(
+        id: -1,
+        name: "Library",
+        type: NodeType.folder,
+        children: children,
+        pictures: const [],
+      );
     } catch (e) {
       if (kDebugMode) {
         print("Error loading library data: $e");
       }
 
-      rethrow;
+      return HierarchyNode(
+        id: -1,
+        name: "Error",
+        type: NodeType.folder,
+      );
     }
   }
 

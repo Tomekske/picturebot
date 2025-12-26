@@ -13,21 +13,28 @@ class MockBackendApi {
   /// Simulates an asynchronous network request to fetch the library tree.
   ///
   /// Returns a hardcoded tree structure containing Folders and Albums.
-  static Future<Map<String, dynamic>> getLibraryData() async {
-    // Simulate network latency
-    await Future.delayed(const Duration(milliseconds: 1500));
-
+  static Future<List<Map<String, dynamic>>> getLibraryData() async {
     try {
-      final jsonString = await rootBundle.loadString(
-        'assets/mock_library_data.json',
-      );
+      final String baseUrl = 'http://localhost:8080';
 
-      return jsonDecode(jsonString);
+      final Uri uri = Uri.parse('$baseUrl/hierarchy');
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> decodedList = jsonDecode(response.body);
+
+        return decodedList.cast<Map<String, dynamic>>();
+      } else {
+        throw Exception(
+          'Failed to load hierarchy. Status Code: ${response.statusCode}',
+        );
+      }
     } catch (e) {
       if (kDebugMode) {
-        print("Error loading mock data: $e");
+        print("Error loading the hierarchy: $e");
       }
-      rethrow;
+
+      return [];
     }
   }
 
