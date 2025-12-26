@@ -34,4 +34,12 @@ class BackendService {
   Future<Settings> loadSettings() {
     return _repository.getSettings();
   }
+
+  /// Saves the user's configuration settings to the backend.
+  ///
+  /// Takes a [Settings] object containing the modified preferences (Theme, Library Path)
+  /// and persists them via the repository.
+  Future<void> saveSettings(Settings settings) {
+    return _repository.updateSettings(settings);
+  }
 }

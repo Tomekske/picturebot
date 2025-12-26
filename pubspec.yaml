@@ -20,6 +20,3 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 flutter:
   uses-material-design: true
-  assets:
-    - assets/mock_library_data.json
-    - assets/mock_settings_data.json

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 
 /// A simulated backend server that generates dummy data and mimics network behavior.
 ///
@@ -10,8 +11,6 @@ import 'package:flutter/services.dart';
 /// by injecting artificial latency and generating random content for testing UI states.
 class MockBackendApi {
   /// Simulates an asynchronous network request to fetch the library tree.
-  ///
-  /// Includes a 1.5-second artificial delay to test loading states.
   ///
   /// Returns a hardcoded tree structure containing Folders and Albums.
   static Future<Map<String, dynamic>> getLibraryData() async {
@@ -34,21 +33,56 @@ class MockBackendApi {
 
   /// Simulates fetching the user configuration file from the server.
   ///
-  /// Includes a 1.5-second artificial delay to test loading states.
-  ///
   /// Returns a [Map] representing the JSON configuration.
   static Future<Map<String, dynamic>> getSettings() async {
-    // Simulate network latency
-    await Future.delayed(const Duration(milliseconds: 1500));
-
     try {
-      final jsonString = await rootBundle.loadString(
-        'assets/mock_settings_data.json',
-      );
-      return jsonDecode(jsonString);
+      final Uri uri = Uri.parse('http://localhost:8080/settings');
+      final response = await http.get(uri);
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      } else {
+        throw Exception(
+          'Failed to load settings. Status Code: ${response.statusCode}',
+        );
+      }
     } catch (e) {
       if (kDebugMode) {
         print("Error loading mock settings: $e");
+      }
+      rethrow;
+    }
+  }
+
+  /// Sends updated settings to the local backend server.
+  ///
+  /// Performs an HTTP POST request to `http://localhost:8080/settings` with
+  /// the [newSettings] encoded as a JSON body.
+  ///
+  /// Expects a 200 OK or 201 Created status code upon success.
+  static Future<void> updateSettings(Map<String, dynamic> newSettings) async {
+    try {
+      final Uri uri = Uri.parse('http://localhost:8080/settings');
+      final response = await http.post(
+        uri,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(newSettings),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (kDebugMode) {
+          print("BackendApi: Settings successfully updated -> $newSettings");
+        }
+      } else {
+        throw Exception(
+          'Failed to update settings. Status Code: ${response.statusCode}, Body: ${response.body}',
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error updating settings: $e");
       }
       rethrow;
     }

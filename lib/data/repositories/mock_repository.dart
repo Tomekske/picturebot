@@ -43,4 +43,19 @@ class MockRepository {
       return Settings.initial();
     }
   }
+
+  /// Persists the provided [settings] to the backend.
+  ///
+  /// Converts the domain [Settings] model into JSON and delegates the
+  /// transmission to [MockBackendApi.updateSettings].
+  Future<void> updateSettings(Settings settings) async {
+    try {
+      await MockBackendApi.updateSettings(settings.toJson());
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error updating settings: $e");
+      }
+      rethrow;
+    }
+  }
 }
