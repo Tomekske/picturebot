@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../data/models/settings.dart';
@@ -31,7 +32,10 @@ class SettingsCubit extends Cubit<SettingsState> {
 
       // TODO: Call _backendService.saveSettings(newSettings) to persist
     } catch (e) {
-      // Optionally handle save failure
+      if (kDebugMode) {
+        print("Error updating theme: $e");
+      }
+      emit(SettingsError(state.settings, "Failed to update theme"));
     }
   }
 
@@ -43,7 +47,10 @@ class SettingsCubit extends Cubit<SettingsState> {
 
       // TODO: Call _backendService.saveSettings(newSettings) to persist
     } catch (e) {
-      // Optionally handle save failure
+      if (kDebugMode) {
+        print("Error updating library: $e");
+      }
+      emit(SettingsError(state.settings, "Failed to update library"));
     }
   }
 }
