@@ -22,7 +22,7 @@ class BackendRepository {
   /// it returns a placeholder "Error" node to prevent UI crashes.
   Future<HierarchyNode> getInitialData() async {
     try {
-      final dynamic response = await BackendApi.getLibraryData();
+      final response = await BackendApi.getLibraryData();
 
       List<HierarchyNode> children = [];
 

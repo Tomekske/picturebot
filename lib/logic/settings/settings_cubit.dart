@@ -42,7 +42,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       final newSettings = state.settings.copyWith(themeMode: mode);
       emit(SettingsLoaded(newSettings));
 
-      _backendService.saveSettings(newSettings);
+      await _backendService.saveSettings(newSettings);
     } catch (e) {
       if (kDebugMode) {
         print("Error updating theme: $e");
@@ -58,12 +58,12 @@ class SettingsCubit extends Cubit<SettingsState> {
   /// this new configuration.
   ///
   /// [path] should be a valid absolute directory path on the user's HDD.
-  void updateLibraryLocation(String path) {
+  Future<void> updateLibraryLocation(String path) async {
     try {
       final newSettings = state.settings.copyWith(libraryPath: path);
       emit(SettingsLoaded(newSettings));
 
-      _backendService.saveSettings(newSettings);
+      await _backendService.saveSettings(newSettings);
     } catch (e) {
       if (kDebugMode) {
         print("Error updating library: $e");

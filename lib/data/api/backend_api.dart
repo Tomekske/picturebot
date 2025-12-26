@@ -21,7 +21,13 @@ class BackendApi {
       final String baseUrl = 'http://localhost:8080';
 
       final Uri uri = Uri.parse('$baseUrl/hierarchy');
-      final response = await http.get(uri);
+
+      final response = await http
+          .get(uri)
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw TimeoutException('Request timed out'),
+          );
 
       if (response.statusCode == 200) {
         final List<dynamic> decodedList = jsonDecode(response.body);
