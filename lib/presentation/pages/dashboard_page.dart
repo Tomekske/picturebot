@@ -8,18 +8,14 @@ import '../../data/models/hierarchy_node.dart';
 import '../../data/models/picture.dart';
 import '../../data/services/backend_service.dart';
 import '../../logic/bloc/dashboard_bloc.dart';
+import '../../logic/settings/settings_cubit.dart';
 import '../dialogs/app_dialogs.dart';
 import '../widgets/inspector_panel.dart';
 import '../widgets/status_icon.dart';
 
 class DashboardPage extends StatefulWidget {
-  final VoidCallback toggleTheme;
-  final ThemeMode currentMode;
-
   const DashboardPage({
     super.key,
-    required this.toggleTheme,
-    required this.currentMode,
   });
 
   @override
@@ -45,6 +41,8 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<SettingsCubit>();
+
     return AnimatedBuilder(
       animation: _bloc,
       builder: (context, _) {
@@ -69,27 +67,6 @@ class _DashboardPageState extends State<DashboardPage> {
         );
 
         return NavigationView(
-          appBar: NavigationAppBar(
-            automaticallyImplyLeading: false,
-            title: const Text(
-              'Picturebot',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            actions: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    widget.currentMode == ThemeMode.light
-                        ? FluentIcons.sunny
-                        : FluentIcons.clear_night,
-                  ),
-                  onPressed: widget.toggleTheme,
-                ),
-                const SizedBox(width: 16),
-              ],
-            ),
-          ),
           pane: NavigationPane(
             selected: selectedIndex,
             onChanged: (index) {
@@ -104,7 +81,11 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: const Icon(FluentIcons.settings),
                 title: const Text("Settings"),
                 body: const Center(child: Text("Settings Page")),
-                onTap: () => AppDialogs.showSettingsDialog(context),
+                onTap: () {
+                  AppDialogs.showSettingsDialog(
+                    context,
+                  );
+                },
               ),
             ],
           ),

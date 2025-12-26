@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../api/mock_backend_api.dart';
 import '../models/hierarchy_node.dart';
+import '../models/settings.dart';
 
 /// A repository implementation that acts as a bridge to the [MockBackendApi].
 ///
@@ -22,6 +23,24 @@ class MockRepository {
       }
 
       rethrow;
+    }
+  }
+
+  /// Fetches the application settings from the backend source.
+  ///
+  /// Delegates the raw data retrieval to [MockBackendApi.getSettings] and
+  /// transforms the JSON response into a strong-typed [Settings] model.
+  ///
+  /// Returns default [Settings.initial] if the fetch fails to prevent app crashes.
+  Future<Settings> getSettings() async {
+    try {
+      final response = await MockBackendApi.getSettings();
+      return Settings.fromJson(response);
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error processing settings data: $e");
+      }
+      return Settings.initial();
     }
   }
 }
