@@ -168,7 +168,7 @@ class _DashboardPageState extends State<DashboardPage> {
           icon: FluentIcons.folder_horizontal,
           text: "Empty Folder",
           actionLabel: "New Item",
-          onAction: () => AppDialogs.showAddDialog(context, (name, type) {
+          onAction: () => AppDialogs.showHierarchyDialog(context, (name, type) {
             _bloc.addNode(name, type, node.id);
           }),
         );
@@ -384,9 +384,10 @@ class _DashboardPageState extends State<DashboardPage> {
             CommandBarButton(
               icon: const Icon(FluentIcons.add),
               label: const Text('New'),
-              onPressed: () => AppDialogs.showAddDialog(context, (name, type) {
-                _bloc.addNode(name, type, node.id);
-              }),
+              onPressed: () =>
+                  AppDialogs.showHierarchyDialog(context, (name, type) {
+                    _bloc.addNode(name, type, node.id);
+                  }),
             ),
             CommandBarButton(
               icon: const Icon(FluentIcons.filter),
@@ -446,7 +447,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildAddItemCard(HierarchyNode parentNode) {
     return HoverButton(
-      onPressed: () => AppDialogs.showAddDialog(context, (name, type) {
+      onPressed: () => AppDialogs.showHierarchyDialog(context, (name, type) {
         _bloc.addNode(name, type, parentNode.id);
       }),
       builder: (p0, states) {
