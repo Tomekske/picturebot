@@ -30,25 +30,35 @@ func main() {
 		log.Fatal("failed to migrate:", err)
 	}
 
+    // Initialize Repositories
 	albumRepo := repository.NewAlbumRepository(db)
 	pictureRepo := repository.NewPictureRepository(db)
 	hierarchyRepo := repository.NewHierarchyRepository(db)
 	settingsRepo := repository.NewSettingsRepository(db)
 
+    // Initialize Services
 	albumService := service.NewAlbumService(albumRepo, pictureRepo)
 	pictureService := service.NewPictureService(pictureRepo)
 	hierarchyService := service.NewHierarchyService(hierarchyRepo)
 	settingsService := service.NewSettingsService(settingsRepo)
 
+    // Initialize Router
 	router := gin.Default()
+
+    // Routes
 	router.GET("/albums", api.GetAlbums(albumService))
+ 	router.POST("/albums", api.CreateAlbum(albumService))
+
 	router.GET("/pictures", api.GetPictures(pictureService))
 	router.GET("/pictures/:id", api.FindByID(pictureService))
 	router.GET("/pictures/album/:id", api.FindByAlbumID(pictureService))
-	router.POST("/albums", api.CreateAlbum(albumService))
+
+
 	router.POST("/hierarchy", api.CreateNode(hierarchyService))
 	router.GET("/hierarchy", api.GetHierarchy(hierarchyService))
+
 	router.GET("/settings", api.GetSettings(settingsService))
 	router.POST("/settings", api.UpdateSettings(settingsService))
+
 	router.Run("localhost:8080")
 }
