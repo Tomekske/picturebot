@@ -20,6 +20,7 @@ type CreateNodeRequest struct {
 	ParentID uint                `json:"parent_id"`
 	Name     string              `json:"name"`
 	Type     model.HierarchyType `json:"type"`
+    SubFolders []model.SubFolder   `json:"sub_folders"`
 }
 
 func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, error) {
@@ -42,7 +43,8 @@ func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, 
 		ParentID: parentID,
 		Name:     req.Name,
 		Type:     req.Type,
-		Children: []*model.Hierarchy{}, // Init empty slice
+		Children: []*model.Hierarchy{},
+        SubFolders: req.SubFolders,
 	}
 
 	// 4. Generate UUID for Albums

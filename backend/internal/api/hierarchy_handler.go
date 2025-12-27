@@ -15,6 +15,7 @@ func CreateNode(s *service.HierarchyService) gin.HandlerFunc {
 			ParentID uint   `json:"parent_id"`
 			Name     string `json:"name" binding:"required"`
 			Type     string `json:"type" binding:"required"` // "folder" or "album"
+            SubFolders []model.SubFolder `json:"sub_folders"`
 		}
 
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -27,6 +28,7 @@ func CreateNode(s *service.HierarchyService) gin.HandlerFunc {
 			ParentID: req.ParentID,
 			Name:     req.Name,
 			Type:     model.HierarchyType(req.Type),
+            SubFolders: req.SubFolders,
 		}
 
 		node, err := s.CreateNode(serviceReq)
