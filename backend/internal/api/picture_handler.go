@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 	"picturebot-backend/internal/model"
 	"picturebot-backend/internal/service"
@@ -10,73 +9,71 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetPictures(service *service.PictureService) gin.HandlerFunc {
+func GetPictures(s *service.PictureService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		albums, err := service.GetPictures()
+		pictures, err := s.GetPictures()
 		if err != nil {
-			log.Println("failed to get albums:", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch pictures"})
 			return
 		}
-
-		c.IndentedJSON(http.StatusOK, albums)
+		c.JSON(http.StatusOK, pictures)
 	}
 }
 
-func FindByID(service *service.PictureService) gin.HandlerFunc {
+func FindByID(s *service.PictureService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idStr := c.Param("id")
-		id, err := strconv.ParseUint(idStr, 10, 64)
-
-		picture, err := service.FindByID(uint(id))
+		// Parse string to uint
+		id, err := strconv.ParseUint(idStr, 10, 32)
 		if err != nil {
-			log.Println("failed to get picture:", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
 			return
 		}
 
-		c.IndentedJSON(http.StatusOK, picture)
+		picture, err := s.FindByID(uint(id))
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Picture not found"})
+			return
+		}
+
+		c.JSON(http.StatusOK, picture)
 	}
 }
 
-func FindByAlbumID(service *service.PictureService) gin.HandlerFunc {
+func FindByAlbumID(s *service.PictureService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		albumIDStr := c.Param("id")
-		albumID, err := strconv.ParseUint(albumIDStr, 10, 64)
+		idStr := c.Param("id")
+		id, err := strconv.ParseUint(idStr, 10, 32)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid album ID"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Album ID format"})
 			return
 		}
 
-		pictures, err := service.FindByAlbumID(uint(albumID))
+		pictures, err := s.FindByAlbumID(uint(id))
 		if err != nil {
-			log.Println("failed to get pictures by album ID:", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch album pictures"})
 			return
 		}
 
-		c.IndentedJSON(http.StatusOK, pictures)
+		c.JSON(http.StatusOK, pictures)
 	}
 }
 
-func CreatePicture(service *service.PictureService) gin.HandlerFunc {
+func CreatePicture(s *service.PictureService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var picture model.Picture
+		var req model.Picture
 
-		// 1. Parse JSON from the incoming request (body)
-		if err := c.ShouldBindJSON(&picture); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		// Bind JSON to struct
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 			return
 		}
 
-		// 2. Pass the parsed picture to the service
-		err := service.CreatePicture(&picture)
-		if err != nil {
-			log.Println("failed to create picture:", err)
+		if err := s.CreatePicture(&req); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create picture"})
 			return
 		}
 
-		c.IndentedJSON(http.StatusCreated, picture)
+		c.JSON(http.StatusCreated, req)
 	}
 }
