@@ -77,20 +77,6 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
           ),
           const SizedBox(height: 16),
           const Text(
-            "Name",
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextBox(
-            controller: _nameController,
-            placeholder: 'Example: Vacation 2024',
-          ),
-          const SizedBox(height: 16),
-          const Text(
             "Parent",
             style: TextStyle(
               fontSize: 12,
@@ -113,6 +99,20 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
                 setState(() => _selectedParentId = v);
               }
             },
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            "Name",
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextBox(
+            controller: _nameController,
+            placeholder: 'Example: Vacation 2024',
           ),
         ],
       ),
