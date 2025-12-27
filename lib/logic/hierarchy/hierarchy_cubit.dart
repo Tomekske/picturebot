@@ -21,7 +21,6 @@ class HierarchyCubit extends Cubit<HierarchyState> {
 
       HierarchyNode? nextSelectedNode;
 
-      // Try to preserve the current selection after reload
       if (state.selectedNode != null) {
         final found = _findNode(newData, state.selectedNode!.id);
         nextSelectedNode = found ?? newData;
@@ -67,7 +66,6 @@ class HierarchyCubit extends Cubit<HierarchyState> {
   }
 
   Future<void> addNode(String name, NodeType type, int parentId) async {
-    // Optimistic updates or simply reload. Here we stick to reload pattern.
     final newNode = HierarchyNode(
       id: 0,
       parentId: parentId,
@@ -79,7 +77,6 @@ class HierarchyCubit extends Cubit<HierarchyState> {
 
     try {
       await _backendService.createNode(newNode);
-      // Reload to reflect changes and new IDs
       await loadData();
     } catch (e) {
       if (kDebugMode) {
