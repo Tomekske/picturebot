@@ -25,6 +25,6 @@ func (s *PictureService) FindByID(id uint) (*model.Picture, error) {
 	return s.repo.FindByID(id)
 }
 
-func (s *PictureService) FindByAlbumID(albumID uint) ([]model.Picture, error) {
-	return s.repo.FindByAlbumID(albumID)
+func (s *PictureService) FindByHierarchyID(hierarchyID uint) ([]model.Picture, error) {
+	return s.repo.FindByHierarchyID(hierarchyID)
 }

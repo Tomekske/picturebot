@@ -21,7 +21,6 @@ func main() {
 
 	// Auto-migrate schema
 	if err := db.AutoMigrate(
-		&model.Album{},
 		&model.Picture{},
 		&model.SubFolder{},
 		&model.Hierarchy{},
@@ -31,13 +30,11 @@ func main() {
 	}
 
     // Initialize Repositories
-	albumRepo := repository.NewAlbumRepository(db)
 	pictureRepo := repository.NewPictureRepository(db)
 	hierarchyRepo := repository.NewHierarchyRepository(db)
 	settingsRepo := repository.NewSettingsRepository(db)
 
     // Initialize Services
-	albumService := service.NewAlbumService(albumRepo, pictureRepo)
 	pictureService := service.NewPictureService(pictureRepo)
 	hierarchyService := service.NewHierarchyService(hierarchyRepo)
 	settingsService := service.NewSettingsService(settingsRepo)
@@ -46,12 +43,9 @@ func main() {
 	router := gin.Default()
 
     // Routes
-	router.GET("/albums", api.GetAlbums(albumService))
- 	router.POST("/albums", api.CreateAlbum(albumService))
-
 	router.GET("/pictures", api.GetPictures(pictureService))
 	router.GET("/pictures/:id", api.FindByID(pictureService))
-	router.GET("/pictures/album/:id", api.FindByAlbumID(pictureService))
+	router.GET("/pictures/album/:id", api.FindByHierarchyID(pictureService))
 
 
 	router.POST("/hierarchy", api.CreateNode(hierarchyService))

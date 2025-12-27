@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ... GetPictures and FindByID (same as before) ...
+
 func GetPictures(s *service.PictureService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		pictures, err := s.GetPictures()
@@ -23,7 +25,6 @@ func GetPictures(s *service.PictureService) gin.HandlerFunc {
 func FindByID(s *service.PictureService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idStr := c.Param("id")
-		// Parse string to uint
 		id, err := strconv.ParseUint(idStr, 10, 32)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
@@ -35,23 +36,23 @@ func FindByID(s *service.PictureService) gin.HandlerFunc {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Picture not found"})
 			return
 		}
-
 		c.JSON(http.StatusOK, picture)
 	}
 }
 
-func FindByAlbumID(s *service.PictureService) gin.HandlerFunc {
+// FindByHierarchyID replaces FindByAlbumID
+func FindByHierarchyID(s *service.PictureService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idStr := c.Param("id")
 		id, err := strconv.ParseUint(idStr, 10, 32)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Album ID format"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Hierarchy ID format"})
 			return
 		}
 
-		pictures, err := s.FindByAlbumID(uint(id))
+		pictures, err := s.FindByHierarchyID(uint(id))
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch album pictures"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch node pictures"})
 			return
 		}
 
@@ -62,18 +63,14 @@ func FindByAlbumID(s *service.PictureService) gin.HandlerFunc {
 func CreatePicture(s *service.PictureService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req model.Picture
-
-		// Bind JSON to struct
 		if err := c.ShouldBindJSON(&req); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 			return
 		}
-
 		if err := s.CreatePicture(&req); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create picture"})
 			return
 		}
-
 		c.JSON(http.StatusCreated, req)
 	}
 }

@@ -6,11 +6,14 @@ import (
 	"picturebot-backend/internal/repository"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type HierarchyService struct {
-	repo repository.HierarchyRepository
+	repo *repository.HierarchyRepository
+}
+
+func NewHierarchyService(repo *repository.HierarchyRepository) *HierarchyService {
+	return &HierarchyService{repo: repo}
 }
 
 type CreateNodeRequest struct {
@@ -19,46 +22,32 @@ type CreateNodeRequest struct {
 	Type     model.HierarchyType `json:"type"`
 }
 
-// NewHierarchyService creates a HierarchyService backed by the provided HierarchyRepository.
-func NewHierarchyService(hierarchyRepo repository.HierarchyRepository) *HierarchyService {
-	return &HierarchyService{
-		repo: hierarchyRepo,
-	}
-}
-
 func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, error) {
-	// 1. ParentID Logic: Convert 0 to nil for the database
+	// Handle Root ParentID
 	var parentID *uint
 	if req.ParentID != 0 {
 		parentID = &req.ParentID
 	}
 
-	// 2. Check for duplicates ONLY for Folders
-	// Albums are allowed to have duplicate names (e.g. visiting "Paris" twice on different dates).
-	// Folders usually require unique names within the same parent.
+	// 2. Prevent Duplicate Folders
 	if req.Type == model.TypeFolder {
-		_, err := s.repo.FindByParentAndName(parentID, req.Name, req.Type)
-		if err == nil {
-			// Folder already exists -> Error
-			return nil, errors.New("a folder with this name already exists at this location")
-		} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-			// Actual database error
-			return nil, err
+		exists := s.repo.FindDuplicate(parentID, req.Name, req.Type)
+		if exists {
+			return nil, errors.New("a folder with this name already exists here")
 		}
 	}
 
-	// 3. Generate UUID if it is an Album
-	var nodeUUID string
-	if req.Type == model.TypeAlbum {
-		nodeUUID = uuid.NewString()
-	}
-
-	// 4. Create new node
+	// 3. Prepare Node
 	newNode := &model.Hierarchy{
 		ParentID: parentID,
 		Name:     req.Name,
 		Type:     req.Type,
-		UUID:     nodeUUID, // Unique identifier for albums allows duplicate names
+		Children: []*model.Hierarchy{}, // Init empty slice
+	}
+
+	// 4. Generate UUID for Albums
+	if req.Type == model.TypeAlbum {
+		newNode.UUID = uuid.NewString()
 	}
 
 	if err := s.repo.Create(newNode); err != nil {
@@ -68,42 +57,34 @@ func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, 
 	return newNode, nil
 }
 
-// GetFullHierarchy retrieves all nodes and assembles them into a tree structure
+// GetFullHierarchy transforms the flat database rows into a nested tree structure.
 func (s *HierarchyService) GetFullHierarchy() ([]*model.Hierarchy, error) {
-	// 1. Fetch all nodes (Flat list)
+	// 1. Get all nodes flat
 	allNodes, err := s.repo.FindAll()
 	if err != nil {
 		return nil, err
 	}
 
-	// 2. Map nodes by ID for quick lookup & Initialize Lists
+	// 2. Create a lookup map
 	nodeMap := make(map[uint]*model.Hierarchy)
-
 	for _, node := range allNodes {
-		// IMPORTANT: Initialize slices to empty arrays [] to avoid JSON 'null'
-		if node.Children == nil {
-			node.Children = []*model.Hierarchy{}
-		}
-		if node.Pictures == nil {
-			node.Pictures = []model.Picture{}
-		}
+		node.Children = []*model.Hierarchy{}
 
 		nodeMap[node.ID] = node
 	}
 
-	// 3. Assemble the tree
-	// Initialize rootNodes to empty slice so API returns [] instead of null if DB is empty
-	rootNodes := []*model.Hierarchy{}
+	// 3. Build Tree
+	var rootNodes []*model.Hierarchy
 
 	for _, node := range allNodes {
 		if node.ParentID == nil {
-			// Root node
 			rootNodes = append(rootNodes, node)
 		} else {
-			// Child node: append to parent's children
-			// Since we are working with pointers, this updates the node inside nodeMap/rootNodes
-			if parent, exists := nodeMap[*node.ParentID]; exists {
+			if parent, found := nodeMap[*node.ParentID]; found {
 				parent.Children = append(parent.Children, node)
+			} else {
+				// Handle orphans by showing them at root
+				rootNodes = append(rootNodes, node)
 			}
 		}
 	}

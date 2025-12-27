@@ -14,32 +14,33 @@ func NewPictureRepository(db *gorm.DB) *PictureRepository {
 	return &PictureRepository{db: db}
 }
 
-// Create inserts a new picture into the database.
 func (r *PictureRepository) Create(picture *model.Picture) error {
-    return r.db.Create(picture).Error
+	return r.db.Create(picture).Error
 }
 
-// FindAll retrieves every picture in the database.
 func (r *PictureRepository) FindAll() ([]model.Picture, error) {
 	var pictures []model.Picture
-
-    err := r.db.Find(&pictures).Error
+	err := r.db.Limit(100).Find(&pictures).Error
 	return pictures, err
 }
 
-// FindByID retrieves a picture by its ID.
 func (r *PictureRepository) FindByID(id uint) (*model.Picture, error) {
 	var picture model.Picture
-	err := r.db.First(&picture, id).Error
+	// Preload SubFolder to know where the file is
+	err := r.db.Preload("SubFolder").First(&picture, id).Error
 	return &picture, err
 }
 
-// FindByAlbumID retrieves all pictures for an album by joining with the SubFolders table.
-func (r *PictureRepository) FindByAlbumID(albumID uint) ([]model.Picture, error) {
-    var pictures []model.Picture
+// FindByHierarchyID retrieves all pictures for a specific Hierarchy Node (Album)
+// by joining through the SubFolders table.
+func (r *PictureRepository) FindByHierarchyID(hierarchyID uint) ([]model.Picture, error) {
+	var pictures []model.Picture
 
+	// SQL: SELECT * FROM pictures
+	// JOIN sub_folders ON sub_folders.id = pictures.sub_folder_id
+	// WHERE sub_folders.hierarchy_id = ?
 	err := r.db.Joins("JOIN sub_folders ON sub_folders.id = pictures.sub_folder_id").
-		Where("sub_folders.album_id = ?", albumID).
+		Where("sub_folders.hierarchy_id = ?", hierarchyID).
 		Find(&pictures).Error
 
 	return pictures, err
