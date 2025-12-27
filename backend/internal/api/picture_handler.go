@@ -9,8 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ... GetPictures and FindByID (same as before) ...
-
 func GetPictures(s *service.PictureService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		pictures, err := s.GetPictures()

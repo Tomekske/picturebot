@@ -39,6 +39,6 @@ func (sf *SubFolder) AddPicture(filename string, index string) Picture {
 		Extension:   ext,
 		Type:        pType,
 		Location:    fullPath,
-		SubFolderID: sf.ID, // Link to this subfolder
+		SubFolderID: sf.ID,
 	}
 }

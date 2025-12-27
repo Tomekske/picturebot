@@ -18,7 +18,7 @@ func (repo *SubFolderRepository) Create(subFolder *model.SubFolder) error {
 	return repo.db.Create(subFolder).Error
 }
 
-// FindByHierarchyID retrieves all subfolders for a specific Hierarchy node (Album).
+// FindByHierarchyID retrieves all subfolders for a specific Hierarchy node.
 func (repo *SubFolderRepository) FindByHierarchyID(hierarchyID uint) ([]model.SubFolder, error) {
 	var subFolders []model.SubFolder
 	err := repo.db.Where("hierarchy_id = ?", hierarchyID).Find(&subFolders).Error

@@ -12,10 +12,10 @@ import (
 func CreateNode(s *service.HierarchyService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
-			ParentID uint   `json:"parent_id"`
-			Name     string `json:"name" binding:"required"`
-			Type     string `json:"type" binding:"required"` // "folder" or "album"
-            SubFolders []model.SubFolder `json:"sub_folders"`
+			ParentID   uint              `json:"parent_id"`
+			Name       string            `json:"name" binding:"required"`
+			Type       string            `json:"type" binding:"required"` // "folder" or "album"
+			SubFolders []model.SubFolder `json:"sub_folders"`
 		}
 
 		if err := c.ShouldBindJSON(&req); err != nil {
@@ -25,10 +25,10 @@ func CreateNode(s *service.HierarchyService) gin.HandlerFunc {
 
 		// Convert to Service Request
 		serviceReq := service.CreateNodeRequest{
-			ParentID: req.ParentID,
-			Name:     req.Name,
-			Type:     model.HierarchyType(req.Type),
-            SubFolders: req.SubFolders,
+			ParentID:   req.ParentID,
+			Name:       req.Name,
+			Type:       model.HierarchyType(req.Type),
+			SubFolders: req.SubFolders,
 		}
 
 		node, err := s.CreateNode(serviceReq)

@@ -20,7 +20,7 @@ func (r *PictureRepository) Create(picture *model.Picture) error {
 
 func (r *PictureRepository) FindAll() ([]model.Picture, error) {
 	var pictures []model.Picture
-	err := r.db.Limit(100).Find(&pictures).Error
+	err := r.db.Find(&pictures).Error
 	return pictures, err
 }
 

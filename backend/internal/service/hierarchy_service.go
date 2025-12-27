@@ -17,10 +17,10 @@ func NewHierarchyService(repo *repository.HierarchyRepository) *HierarchyService
 }
 
 type CreateNodeRequest struct {
-	ParentID uint                `json:"parent_id"`
-	Name     string              `json:"name"`
-	Type     model.HierarchyType `json:"type"`
-    SubFolders []model.SubFolder   `json:"sub_folders"`
+	ParentID   uint                `json:"parent_id"`
+	Name       string              `json:"name"`
+	Type       model.HierarchyType `json:"type"`
+	SubFolders []model.SubFolder   `json:"sub_folders"`
 }
 
 func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, error) {
@@ -32,7 +32,12 @@ func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, 
 
 	// 2. Prevent Duplicate Folders
 	if req.Type == model.TypeFolder {
-		exists := s.repo.FindDuplicate(parentID, req.Name, req.Type)
+		exists, err := s.repo.FindDuplicate(parentID, req.Name, req.Type)
+
+		if err != nil {
+			return nil, err
+		}
+
 		if exists {
 			return nil, errors.New("a folder with this name already exists here")
 		}
@@ -40,11 +45,11 @@ func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, 
 
 	// 3. Prepare Node
 	newNode := &model.Hierarchy{
-		ParentID: parentID,
-		Name:     req.Name,
-		Type:     req.Type,
-		Children: []*model.Hierarchy{},
-        SubFolders: req.SubFolders,
+		ParentID:   parentID,
+		Name:       req.Name,
+		Type:       req.Type,
+		Children:   []*model.Hierarchy{},
+		SubFolders: req.SubFolders,
 	}
 
 	// 4. Generate UUID for Albums

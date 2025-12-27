@@ -28,7 +28,7 @@ func (r *HierarchyRepository) FindAll() ([]*model.Hierarchy, error) {
 }
 
 // FindDuplicate checks if a folder with the same name exists in the same parent folder.
-func (r *HierarchyRepository) FindDuplicate(parentID *uint, name string, nodeType model.HierarchyType) bool {
+func (r *HierarchyRepository) FindDuplicate(parentID *uint, name string, nodeType model.HierarchyType) (bool, error) {
 	var count int64
 	query := r.db.Model(&model.Hierarchy{}).Where("name = ? AND type = ?", name, nodeType)
 
@@ -38,6 +38,8 @@ func (r *HierarchyRepository) FindDuplicate(parentID *uint, name string, nodeTyp
 		query = query.Where("parent_id = ?", parentID)
 	}
 
-	query.Count(&count)
-	return count > 0
+	if err := query.Count(&count).Error; err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
