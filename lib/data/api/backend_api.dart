@@ -54,13 +54,18 @@ class BackendApi {
   static Future<void> createNode(Map<String, dynamic> node) async {
     try {
       final Uri uri = Uri.parse('http://localhost:8080/hierarchy');
-      final response = await http.post(
-        uri,
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(node),
-      );
+      final response = await http
+          .post(
+            uri,
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: jsonEncode(node),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw TimeoutException('Request timed out'),
+          );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (kDebugMode) {

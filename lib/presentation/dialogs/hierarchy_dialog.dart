@@ -124,9 +124,10 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
         FilledButton(
           child: const Text('Create'),
           onPressed: () {
-            if (_selectedParentId != null) {
+            final name = _nameController.text.trim();
+            if (_selectedParentId != null && name.isNotEmpty) {
               widget.onAdd(
-                _nameController.text,
+                name,
                 _selectedType,
                 _selectedParentId!,
               );

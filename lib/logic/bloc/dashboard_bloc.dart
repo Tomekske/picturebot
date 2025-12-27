@@ -64,6 +64,8 @@ class DashboardBloc extends ChangeNotifier {
       if (kDebugMode) {
         print("Error creating node: $e");
       }
+
+      rethrow;
     }
   }
 
