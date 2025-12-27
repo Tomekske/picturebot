@@ -37,6 +37,33 @@ class _DashboardPageState extends State<DashboardPage> {
     super.dispose();
   }
 
+  /// Helper to flatten the tree into a list of folders for the dialog dropdown
+  List<HierarchyNode> _getAllFolders(HierarchyNode root) {
+    List<HierarchyNode> folders = [];
+    if (root.type == NodeType.folder) {
+      folders.add(root);
+    }
+    for (var child in root.children) {
+      folders.addAll(_getAllFolders(child));
+    }
+    return folders;
+  }
+
+  /// Opens the dialog and calls the BLoC when the user confirms
+  void _openAddDialog() {
+    if (_bloc.rootNode == null) return;
+
+    final allFolders = _getAllFolders(_bloc.rootNode!);
+
+    AppDialogs.showHierarchyDialog(
+      context,
+      allFolders,
+      (name, type, parentId) {
+        _bloc.addNode(name, type, parentId);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<SettingsCubit>();
@@ -52,13 +79,11 @@ class _DashboardPageState extends State<DashboardPage> {
 
         final selectedNode = _bloc.selectedNode;
 
-        // Generate a FLAT list of Navigation Items with visual indentation
         final List<NavigationPaneItem> navItems = [
           PaneItemHeader(header: const Text("LIBRARY")),
           ..._buildFlatPaneItems(_bloc.rootNode!),
         ];
 
-        // Calculate the index for the NavigationPane to update the highlight
         final int selectedIndex = _calculateSelectedIndex(
           navItems,
           selectedNode?.id,
@@ -96,11 +121,9 @@ class _DashboardPageState extends State<DashboardPage> {
   }) {
     List<NavigationPaneItem> items = [];
 
-    // Create the item for the current node
     items.add(
       PaneItem(
         key: ValueKey(node.id),
-        // Simulate tree depth by indenting the icon
         icon: Padding(
           padding: EdgeInsets.only(left: 16.0 * depth),
           child: Icon(
@@ -116,16 +139,13 @@ class _DashboardPageState extends State<DashboardPage> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        // Pass the specific node to the body builder so the view is correct when clicked
         body: _buildMainContent(node, _bloc.selectedPicture),
         onTap: () {
-          // Important: Sync the BLoC state when an item is clicked
           _bloc.selectNode(node);
         },
       ),
     );
 
-    // Recursively add children to the same flat list
     for (var child in node.children) {
       items.addAll(_buildFlatPaneItems(child, depth: depth + 1));
     }
@@ -133,10 +153,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return items;
   }
 
-  int _calculateSelectedIndex(
-    List<NavigationPaneItem> items,
-    int? targetId,
-  ) {
+  int _calculateSelectedIndex(List<NavigationPaneItem> items, int? targetId) {
     if (targetId == null) return 0;
 
     int index = 0;
@@ -161,16 +178,13 @@ class _DashboardPageState extends State<DashboardPage> {
 
     Widget content;
 
-    // CASE: FOLDER VIEW
     if (node.type == NodeType.folder) {
       if (node.children.isEmpty) {
         content = _buildEmptyState(
           icon: FluentIcons.folder_horizontal,
           text: "Empty Folder",
           actionLabel: "New Item",
-          onAction: () => AppDialogs.showAddDialog(context, (name, type) {
-            _bloc.addNode(name, type, node.id);
-          }),
+          onAction: _openAddDialog,
         );
       } else {
         content = GridView.builder(
@@ -183,7 +197,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           itemBuilder: (ctx, index) {
             if (index == node.children.length) {
-              return _buildAddItemCard(node);
+              return _buildAddItemCard();
             }
             final child = node.children[index];
             return HoverButton(
@@ -227,7 +241,6 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       }
     } else {
-      // CASE: ALBUM VIEW
       final Map<String, List<Picture>> grouped = {};
       for (var p in node.pictures) {
         final key = DateFormat('yyyy-MM-dd').format(p.date);
@@ -258,7 +271,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Row(
                     children: [
-                      Icon(FluentIcons.calendar, size: 16, color: Colors.blue),
+                      Icon(
+                        FluentIcons.calendar,
+                        size: 16,
+                        color: Colors.blue,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         dateKey,
@@ -384,9 +401,7 @@ class _DashboardPageState extends State<DashboardPage> {
             CommandBarButton(
               icon: const Icon(FluentIcons.add),
               label: const Text('New'),
-              onPressed: () => AppDialogs.showAddDialog(context, (name, type) {
-                _bloc.addNode(name, type, node.id);
-              }),
+              onPressed: _openAddDialog,
             ),
             CommandBarButton(
               icon: const Icon(FluentIcons.filter),
@@ -399,7 +414,7 @@ class _DashboardPageState extends State<DashboardPage> {
               onPressed: () => AppDialogs.showDeleteDialog(
                 context,
                 node.name,
-                () {}, // Delete logic
+                () {},
               ),
             ),
           ],
@@ -444,11 +459,9 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildAddItemCard(HierarchyNode parentNode) {
+  Widget _buildAddItemCard() {
     return HoverButton(
-      onPressed: () => AppDialogs.showAddDialog(context, (name, type) {
-        _bloc.addNode(name, type, parentNode.id);
-      }),
+      onPressed: _openAddDialog,
       builder: (p0, states) {
         return Container(
           decoration: BoxDecoration(

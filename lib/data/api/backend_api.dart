@@ -18,9 +18,7 @@ class BackendApi {
   /// and returns an empty list.
   static Future<List<Map<String, dynamic>>> getLibraryData() async {
     try {
-      final String baseUrl = 'http://localhost:8080';
-
-      final Uri uri = Uri.parse('$baseUrl/hierarchy');
+      final Uri uri = Uri.parse('http://localhost:8080/hierarchy');
 
       final response = await http
           .get(uri)
@@ -44,6 +42,45 @@ class BackendApi {
       }
 
       return [];
+    }
+  }
+
+  /// Sends a request to create a new node in the library hierarchy.
+  ///
+  /// Performs a POST request to the `/hierarchy` endpoint with the [node] data
+  /// encoded as a JSON body.
+  ///
+  /// Throws an [Exception] if the server returns a status code other than 200 or 201.
+  static Future<void> createNode(Map<String, dynamic> node) async {
+    try {
+      final Uri uri = Uri.parse('http://localhost:8080/hierarchy');
+      final response = await http
+          .post(
+            uri,
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: jsonEncode(node),
+          )
+          .timeout(
+            const Duration(seconds: 10),
+            onTimeout: () => throw TimeoutException('Request timed out'),
+          );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (kDebugMode) {
+          print("BackendApi: hierarchy successfully created -> $node");
+        }
+      } else {
+        throw Exception(
+          'Failed to update hierarchy. Status Code: ${response.statusCode}, Body: ${response.body}',
+        );
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error updating hierarchy: $e");
+      }
+      rethrow;
     }
   }
 

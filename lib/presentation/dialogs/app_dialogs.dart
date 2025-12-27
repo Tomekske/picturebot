@@ -1,57 +1,24 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:picturebot/data/enums/node_type.dart';
 import 'package:picturebot/presentation/dialogs/settings_dialog.dart';
 
+import '../../data/models/hierarchy_node.dart';
+import 'hierarchy_dialog.dart';
 import '../../logic/settings/settings_cubit.dart';
 
 class AppDialogs {
-  static Future<void> showAddDialog(
+  static Future<void> showHierarchyDialog(
     BuildContext context,
-    Function(String name, String type) onAdd,
+    List<HierarchyNode> folders,
+    Function(String name, NodeType type, int parentId) onAdd,
   ) async {
-    final nameController = TextEditingController();
-    String type = 'ALBUM';
     await showDialog(
       context: context,
       builder: (context) {
-        return ContentDialog(
-          title: const Text('New Item'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("Name:"),
-              const SizedBox(height: 8),
-              TextBox(
-                controller: nameController,
-                placeholder: 'Example. Vacation 2024',
-              ),
-              const SizedBox(height: 16),
-              const Text("Type:"),
-              const SizedBox(height: 8),
-              ComboBox<String>(
-                value: type,
-                items: const [
-                  ComboBoxItem(value: 'ALBUM', child: Text("Album")),
-                  ComboBoxItem(value: 'FOLDER', child: Text("Folder")),
-                ],
-                onChanged: (v) => type = v ?? 'ALBUM',
-              ),
-            ],
-          ),
-          actions: [
-            Button(
-              child: const Text('Cancel'),
-              onPressed: () => Navigator.pop(context),
-            ),
-            FilledButton(
-              child: const Text('Create'),
-              onPressed: () {
-                onAdd(nameController.text, type);
-                Navigator.pop(context);
-              },
-            ),
-          ],
+        return HierarchyDialog(
+          folders: folders,
+          onAdd: onAdd,
         );
       },
     );

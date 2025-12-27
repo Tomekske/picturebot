@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../data/enums/node_type.dart';
 import '../../data/models/hierarchy_node.dart';
 import '../../data/models/picture.dart';
 import '../../data/services/backend_service.dart';
@@ -15,8 +16,17 @@ class DashboardBloc extends ChangeNotifier {
   }
 
   Future<void> _loadInitialData() async {
-    _rootNode = await _backendService.getLibraryData();
-    _selectedNode = _rootNode;
+    final newData = await _backendService.getLibraryData();
+    _rootNode = newData;
+
+    // Try to preserve the current selection after reload
+    if (_selectedNode != null && _rootNode != null) {
+      final found = findNode(_rootNode!, _selectedNode!.id);
+      _selectedNode = found ?? _rootNode;
+    } else {
+      _selectedNode = _rootNode;
+    }
+
     notifyListeners();
   }
 
@@ -37,16 +47,26 @@ class DashboardBloc extends ChangeNotifier {
     notifyListeners();
   }
 
-  void addNode(String name, String type, int parentId) {
-    // Note: In a real app, you would need to rebuild the tree structure here
-    // since HierarchyNode is immutable-ish.
-    // For this prototype, we'll just print to console as per original code.
-    if (kDebugMode) {
-      print(
-        "Adding $name ($type) to $parentId",
-      );
+  Future<void> addNode(String name, NodeType type, int parentId) async {
+    final newNode = HierarchyNode(
+      id: 0,
+      parentId: parentId,
+      name: name,
+      type: type,
+      children: [],
+      pictures: [],
+    );
+
+    try {
+      await _backendService.createNode(newNode);
+      await _loadInitialData();
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error creating node: $e");
+      }
+
+      rethrow;
     }
-    notifyListeners();
   }
 
   HierarchyNode? findNode(HierarchyNode root, int id) {
