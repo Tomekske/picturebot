@@ -25,7 +25,7 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
   void initState() {
     super.initState();
     _nameController = TextEditingController();
-    // Default to the first folder if available, or root
+    // Default to the first folder if available
     if (widget.folders.isNotEmpty) {
       _selectedParentId = widget.folders.first.id;
     }
@@ -87,7 +87,7 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
           const SizedBox(height: 8),
           TextBox(
             controller: _nameController,
-            placeholder: 'Example: Los Angeles',
+            placeholder: 'Example: Vacation 2024',
           ),
           const SizedBox(height: 16),
           const Text(

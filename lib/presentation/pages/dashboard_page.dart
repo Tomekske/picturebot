@@ -37,7 +37,7 @@ class _DashboardPageState extends State<DashboardPage> {
     super.dispose();
   }
 
-  // Helper to flatten the tree into a list of folders
+  /// Helper to flatten the tree into a list of folders for the dialog dropdown
   List<HierarchyNode> _getAllFolders(HierarchyNode root) {
     List<HierarchyNode> folders = [];
     if (root.type == NodeType.folder) {
@@ -49,16 +49,19 @@ class _DashboardPageState extends State<DashboardPage> {
     return folders;
   }
 
-  void _openAddDialog(HierarchyNode? parentNode) {
+  /// Opens the dialog and calls the BLoC when the user confirms
+  void _openAddDialog() {
     if (_bloc.rootNode == null) return;
 
-    // Get all folders for the dropdown
     final allFolders = _getAllFolders(_bloc.rootNode!);
 
-    AppDialogs.showHierarchyDialog(context, allFolders, (name, type, parentId) {
-      // Use the selected parentId from the dialog
-      _bloc.addNode(name, type.name, parentId);
-    });
+    AppDialogs.showHierarchyDialog(
+      context,
+      allFolders,
+      (name, type, parentId) {
+        _bloc.addNode(name, type, parentId);
+      },
+    );
   }
 
   @override
@@ -76,7 +79,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
         final selectedNode = _bloc.selectedNode;
 
-        // Generate a FLAT list of Navigation Items with visual indentation
         final List<NavigationPaneItem> navItems = [
           PaneItemHeader(header: const Text("LIBRARY")),
           ..._buildFlatPaneItems(_bloc.rootNode!),
@@ -112,8 +114,6 @@ class _DashboardPageState extends State<DashboardPage> {
       },
     );
   }
-
-  // ... (Rest of the file remains similar, just updating the _openAddDialog calls)
 
   List<NavigationPaneItem> _buildFlatPaneItems(
     HierarchyNode node, {
@@ -153,10 +153,7 @@ class _DashboardPageState extends State<DashboardPage> {
     return items;
   }
 
-  int _calculateSelectedIndex(
-    List<NavigationPaneItem> items,
-    int? targetId,
-  ) {
+  int _calculateSelectedIndex(List<NavigationPaneItem> items, int? targetId) {
     if (targetId == null) return 0;
 
     int index = 0;
@@ -187,7 +184,7 @@ class _DashboardPageState extends State<DashboardPage> {
           icon: FluentIcons.folder_horizontal,
           text: "Empty Folder",
           actionLabel: "New Item",
-          onAction: () => _openAddDialog(node),
+          onAction: _openAddDialog,
         );
       } else {
         content = GridView.builder(
@@ -200,7 +197,7 @@ class _DashboardPageState extends State<DashboardPage> {
           ),
           itemBuilder: (ctx, index) {
             if (index == node.children.length) {
-              return _buildAddItemCard(node);
+              return _buildAddItemCard();
             }
             final child = node.children[index];
             return HoverButton(
@@ -274,7 +271,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Row(
                     children: [
-                      Icon(FluentIcons.calendar, size: 16, color: Colors.blue),
+                      Icon(
+                        FluentIcons.calendar,
+                        size: 16,
+                        color: Colors.blue,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         dateKey,
@@ -400,7 +401,7 @@ class _DashboardPageState extends State<DashboardPage> {
             CommandBarButton(
               icon: const Icon(FluentIcons.add),
               label: const Text('New'),
-              onPressed: () => _openAddDialog(node),
+              onPressed: _openAddDialog,
             ),
             CommandBarButton(
               icon: const Icon(FluentIcons.filter),
@@ -413,7 +414,7 @@ class _DashboardPageState extends State<DashboardPage> {
               onPressed: () => AppDialogs.showDeleteDialog(
                 context,
                 node.name,
-                () {}, // Delete logic
+                () {},
               ),
             ),
           ],
@@ -458,9 +459,9 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildAddItemCard(HierarchyNode parentNode) {
+  Widget _buildAddItemCard() {
     return HoverButton(
-      onPressed: () => _openAddDialog(parentNode),
+      onPressed: _openAddDialog,
       builder: (p0, states) {
         return Container(
           decoration: BoxDecoration(

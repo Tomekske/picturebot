@@ -54,6 +54,23 @@ class BackendRepository {
     }
   }
 
+  /// Persists a new hierarchy node to the backend.
+  ///
+  /// Converts the [HierarchyNode] domain model into a JSON-compatible [Map]
+  /// and delegates the API call to [BackendApi.createNode].
+  ///
+  /// Rethrows any exceptions (e.g., network errors) to be handled by the caller.
+  Future<void> createNode(HierarchyNode node) async {
+    try {
+      await BackendApi.createNode(node.toJson());
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error updating settings: $e");
+      }
+      rethrow;
+    }
+  }
+
   /// Fetches and deserializes application settings.
   ///
   /// Retrieves raw JSON from [BackendApi.getSettings] and converts it into

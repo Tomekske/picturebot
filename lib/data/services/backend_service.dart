@@ -25,6 +25,16 @@ class BackendService {
     return _repository.getInitialData();
   }
 
+  /// Persists a new hierarchy node to the backend.
+  ///
+  /// Converts the [HierarchyNode] domain model into a JSON-compatible [Map]
+  /// and delegates the API call to [BackendApi.createNode].
+  ///
+  /// Rethrows any exceptions (e.g., network errors) to be handled by the caller.
+  Future<void> createNode(HierarchyNode node) {
+    return _repository.createNode(node);
+  }
+
   /// Retrieves the user's application configuration settings.
   ///
   /// This includes preferences such as the active theme (Light/Dark) and the
