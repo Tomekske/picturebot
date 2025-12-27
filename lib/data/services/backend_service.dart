@@ -28,7 +28,7 @@ class BackendService {
   /// Retrieves the user's application configuration settings.
   ///
   /// This includes preferences such as the active theme (Light/Dark) and the
-  /// file system path for the photo library.
+  /// filesystem path for the photo library.
   ///
   /// Returns a [Future] that resolves to a [Settings] object.
   Future<Settings> loadSettings() {

@@ -1,12 +1,15 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:picturebot/data/enums/node_type.dart';
+import '../../data/models/hierarchy_node.dart';
 
 class HierarchyDialog extends StatefulWidget {
-  final Function(String name, String type) onAdd;
+  final Function(String name, NodeType type, int parentId) onAdd;
+  final List<HierarchyNode> folders;
 
   const HierarchyDialog({
     super.key,
     required this.onAdd,
+    required this.folders,
   });
 
   @override
@@ -15,13 +18,17 @@ class HierarchyDialog extends StatefulWidget {
 
 class _HierarchyDialogState extends State<HierarchyDialog> {
   late TextEditingController _nameController;
-  String _selectedType = 'ALBUM';
-  String _selectedLocation = 'California';
+  NodeType _selectedType = NodeType.album;
+  int? _selectedParentId;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
+    // Default to the first folder if available, or root
+    if (widget.folders.isNotEmpty) {
+      _selectedParentId = widget.folders.first.id;
+    }
   }
 
   @override
@@ -33,12 +40,11 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
   @override
   Widget build(BuildContext context) {
     return ContentDialog(
-      title: const Text('Nieuw Item Toevoegen'),
+      title: const Text('Add a new item'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- TYPE SECTION ---
           const Text(
             "TYPE",
             style: TextStyle(
@@ -55,7 +61,7 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
                   context: context,
                   label: 'Album',
                   icon: FluentIcons.photo_collection,
-                  value: NodeType.album.name,
+                  value: NodeType.album,
                 ),
               ),
               const SizedBox(width: 8),
@@ -64,7 +70,7 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
                   context: context,
                   label: 'Folder',
                   icon: FluentIcons.folder_horizontal,
-                  value: NodeType.folder.name,
+                  value: NodeType.folder,
                 ),
               ),
             ],
@@ -84,7 +90,6 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
             placeholder: 'Example: Los Angeles',
           ),
           const SizedBox(height: 16),
-
           const Text(
             "Parent",
             style: TextStyle(
@@ -94,19 +99,18 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
             ),
           ),
           const SizedBox(height: 8),
-          ComboBox<String>(
-            value: _selectedLocation,
+          ComboBox<int>(
+            value: _selectedParentId,
             isExpanded: true,
-            items: [
-              _buildComboItem("Library", 0),
-              _buildComboItem("The United States", 1),
-              _buildComboItem("California", 2),
-              _buildComboItem("New York", 2),
-              _buildComboItem("Belgium", 1),
-            ],
+            items: widget.folders.map((node) {
+              return ComboBoxItem<int>(
+                value: node.id,
+                child: Text(node.name),
+              );
+            }).toList(),
             onChanged: (v) {
               if (v != null) {
-                setState(() => _selectedLocation = v);
+                setState(() => _selectedParentId = v);
               }
             },
           ),
@@ -120,8 +124,14 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
         FilledButton(
           child: const Text('Create'),
           onPressed: () {
-            widget.onAdd(_nameController.text, _selectedType);
-            Navigator.pop(context);
+            if (_selectedParentId != null) {
+              widget.onAdd(
+                _nameController.text,
+                _selectedType,
+                _selectedParentId!,
+              );
+              Navigator.pop(context);
+            }
           },
         ),
       ],
@@ -132,7 +142,7 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
     required BuildContext context,
     required String label,
     required IconData icon,
-    required String value,
+    required NodeType value,
   }) {
     final theme = FluentTheme.of(context);
     final isSelected = _selectedType == value;
@@ -175,16 +185,6 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  ComboBoxItem<String> _buildComboItem(String text, int depth) {
-    return ComboBoxItem(
-      value: text,
-      child: Padding(
-        padding: EdgeInsets.only(left: depth * 12.0),
-        child: Text(text),
       ),
     );
   }

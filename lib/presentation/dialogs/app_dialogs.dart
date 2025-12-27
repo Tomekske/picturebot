@@ -1,19 +1,23 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:picturebot/data/enums/node_type.dart';
 import 'package:picturebot/presentation/dialogs/settings_dialog.dart';
 
+import '../../data/models/hierarchy_node.dart';
 import 'hierarchy_dialog.dart';
 import '../../logic/settings/settings_cubit.dart';
 
 class AppDialogs {
   static Future<void> showHierarchyDialog(
     BuildContext context,
-    Function(String name, String type) onAdd,
+    List<HierarchyNode> folders,
+    Function(String name, NodeType type, int parentId) onAdd,
   ) async {
     await showDialog(
       context: context,
       builder: (context) {
         return HierarchyDialog(
+          folders: folders,
           onAdd: onAdd,
         );
       },

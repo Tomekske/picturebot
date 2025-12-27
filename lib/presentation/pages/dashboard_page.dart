@@ -37,6 +37,30 @@ class _DashboardPageState extends State<DashboardPage> {
     super.dispose();
   }
 
+  // Helper to flatten the tree into a list of folders
+  List<HierarchyNode> _getAllFolders(HierarchyNode root) {
+    List<HierarchyNode> folders = [];
+    if (root.type == NodeType.folder) {
+      folders.add(root);
+    }
+    for (var child in root.children) {
+      folders.addAll(_getAllFolders(child));
+    }
+    return folders;
+  }
+
+  void _openAddDialog(HierarchyNode? parentNode) {
+    if (_bloc.rootNode == null) return;
+
+    // Get all folders for the dropdown
+    final allFolders = _getAllFolders(_bloc.rootNode!);
+
+    AppDialogs.showHierarchyDialog(context, allFolders, (name, type, parentId) {
+      // Use the selected parentId from the dialog
+      _bloc.addNode(name, type.name, parentId);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<SettingsCubit>();
@@ -58,7 +82,6 @@ class _DashboardPageState extends State<DashboardPage> {
           ..._buildFlatPaneItems(_bloc.rootNode!),
         ];
 
-        // Calculate the index for the NavigationPane to update the highlight
         final int selectedIndex = _calculateSelectedIndex(
           navItems,
           selectedNode?.id,
@@ -90,17 +113,17 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  // ... (Rest of the file remains similar, just updating the _openAddDialog calls)
+
   List<NavigationPaneItem> _buildFlatPaneItems(
     HierarchyNode node, {
     int depth = 0,
   }) {
     List<NavigationPaneItem> items = [];
 
-    // Create the item for the current node
     items.add(
       PaneItem(
         key: ValueKey(node.id),
-        // Simulate tree depth by indenting the icon
         icon: Padding(
           padding: EdgeInsets.only(left: 16.0 * depth),
           child: Icon(
@@ -116,16 +139,13 @@ class _DashboardPageState extends State<DashboardPage> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        // Pass the specific node to the body builder so the view is correct when clicked
         body: _buildMainContent(node, _bloc.selectedPicture),
         onTap: () {
-          // Important: Sync the BLoC state when an item is clicked
           _bloc.selectNode(node);
         },
       ),
     );
 
-    // Recursively add children to the same flat list
     for (var child in node.children) {
       items.addAll(_buildFlatPaneItems(child, depth: depth + 1));
     }
@@ -161,16 +181,13 @@ class _DashboardPageState extends State<DashboardPage> {
 
     Widget content;
 
-    // CASE: FOLDER VIEW
     if (node.type == NodeType.folder) {
       if (node.children.isEmpty) {
         content = _buildEmptyState(
           icon: FluentIcons.folder_horizontal,
           text: "Empty Folder",
           actionLabel: "New Item",
-          onAction: () => AppDialogs.showHierarchyDialog(context, (name, type) {
-            _bloc.addNode(name, type, node.id);
-          }),
+          onAction: () => _openAddDialog(node),
         );
       } else {
         content = GridView.builder(
@@ -227,7 +244,6 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       }
     } else {
-      // CASE: ALBUM VIEW
       final Map<String, List<Picture>> grouped = {};
       for (var p in node.pictures) {
         final key = DateFormat('yyyy-MM-dd').format(p.date);
@@ -384,10 +400,7 @@ class _DashboardPageState extends State<DashboardPage> {
             CommandBarButton(
               icon: const Icon(FluentIcons.add),
               label: const Text('New'),
-              onPressed: () =>
-                  AppDialogs.showHierarchyDialog(context, (name, type) {
-                    _bloc.addNode(name, type, node.id);
-                  }),
+              onPressed: () => _openAddDialog(node),
             ),
             CommandBarButton(
               icon: const Icon(FluentIcons.filter),
@@ -447,9 +460,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildAddItemCard(HierarchyNode parentNode) {
     return HoverButton(
-      onPressed: () => AppDialogs.showHierarchyDialog(context, (name, type) {
-        _bloc.addNode(name, type, parentNode.id);
-      }),
+      onPressed: () => _openAddDialog(parentNode),
       builder: (p0, states) {
         return Container(
           decoration: BoxDecoration(
