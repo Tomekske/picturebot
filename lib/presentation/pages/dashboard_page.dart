@@ -7,7 +7,8 @@ import '../../data/enums/node_type.dart';
 import '../../data/models/hierarchy_node.dart';
 import '../../data/models/picture.dart';
 import '../../data/services/backend_service.dart';
-import '../../logic/bloc/dashboard_bloc.dart';
+import '../../logic/hierarchy/hierarchy_cubit.dart';
+import '../../logic/hierarchy/hierarchy_state.dart';
 import '../../logic/settings/settings_cubit.dart';
 import '../dialogs/app_dialogs.dart';
 import '../widgets/inspector_panel.dart';
@@ -21,23 +22,23 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  late final DashboardBloc _bloc;
+  late final HierarchyCubit _cubit;
   int topIndex = 0;
 
   @override
   void initState() {
     super.initState();
     final backendService = context.read<BackendService>();
-    _bloc = DashboardBloc(backendService);
+    // Initialize the Cubit
+    _cubit = HierarchyCubit(backendService);
   }
 
   @override
   void dispose() {
-    _bloc.dispose();
+    _cubit.close();
     super.dispose();
   }
 
-  /// Helper to flatten the tree into a list of folders for the dialog dropdown
   List<HierarchyNode> _getAllFolders(HierarchyNode root) {
     List<HierarchyNode> folders = [];
     if (root.type == NodeType.folder) {
@@ -49,17 +50,16 @@ class _DashboardPageState extends State<DashboardPage> {
     return folders;
   }
 
-  /// Opens the dialog and calls the BLoC when the user confirms
   void _openAddDialog() {
-    if (_bloc.rootNode == null) return;
+    if (_cubit.state.rootNode == null) return;
 
-    final allFolders = _getAllFolders(_bloc.rootNode!);
+    final allFolders = _getAllFolders(_cubit.state.rootNode!);
 
     AppDialogs.showHierarchyDialog(
       context,
       allFolders,
       (name, type, parentId) {
-        _bloc.addNode(name, type, parentId);
+        _cubit.addNode(name, type, parentId);
       },
     );
   }
@@ -68,20 +68,26 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     context.watch<SettingsCubit>();
 
-    return AnimatedBuilder(
-      animation: _bloc,
-      builder: (context, _) {
-        if (_bloc.rootNode == null) {
+    return BlocBuilder<HierarchyCubit, HierarchyState>(
+      bloc: _cubit,
+      builder: (context, state) {
+        if (state.status == HierarchyStatus.loading || state.rootNode == null) {
           return const ScaffoldPage(
             content: Center(child: ProgressRing()),
           );
         }
 
-        final selectedNode = _bloc.selectedNode;
+        if (state.status == HierarchyStatus.failure) {
+          return ScaffoldPage(
+            content: Center(child: Text('Error: ${state.errorMessage}')),
+          );
+        }
+
+        final selectedNode = state.selectedNode;
 
         final List<NavigationPaneItem> navItems = [
           PaneItemHeader(header: const Text("LIBRARY")),
-          ..._buildFlatPaneItems(_bloc.rootNode!),
+          ..._buildFlatPaneItems(state.rootNode!, selectedNode?.id),
         ];
 
         final int selectedIndex = _calculateSelectedIndex(
@@ -116,7 +122,8 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   List<NavigationPaneItem> _buildFlatPaneItems(
-    HierarchyNode node, {
+    HierarchyNode node,
+    int? selectedId, {
     int depth = 0,
   }) {
     List<NavigationPaneItem> items = [];
@@ -139,15 +146,15 @@ class _DashboardPageState extends State<DashboardPage> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        body: _buildMainContent(node, _bloc.selectedPicture),
+        body: _buildMainContent(node, _cubit.state.selectedPicture),
         onTap: () {
-          _bloc.selectNode(node);
+          _cubit.selectNode(node);
         },
       ),
     );
 
     for (var child in node.children) {
-      items.addAll(_buildFlatPaneItems(child, depth: depth + 1));
+      items.addAll(_buildFlatPaneItems(child, selectedId, depth: depth + 1));
     }
 
     return items;
@@ -155,7 +162,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   int _calculateSelectedIndex(List<NavigationPaneItem> items, int? targetId) {
     if (targetId == null) return 0;
-
     int index = 0;
     for (final item in items) {
       if (item is PaneItem) {
@@ -201,7 +207,7 @@ class _DashboardPageState extends State<DashboardPage> {
             }
             final child = node.children[index];
             return HoverButton(
-              onPressed: () => _bloc.selectNode(child),
+              onPressed: () => _cubit.selectNode(child),
               builder: (p0, states) {
                 return Card(
                   padding: const EdgeInsets.all(12),
@@ -247,7 +253,6 @@ class _DashboardPageState extends State<DashboardPage> {
         if (!grouped.containsKey(key)) grouped[key] = [];
         grouped[key]!.add(p);
       }
-
       final sortedKeys = grouped.keys.toList()..sort();
 
       if (node.pictures.isEmpty) {
@@ -271,11 +276,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Row(
                     children: [
-                      Icon(
-                        FluentIcons.calendar,
-                        size: 16,
-                        color: Colors.blue,
-                      ),
+                      Icon(FluentIcons.calendar, size: 16, color: Colors.blue),
                       const SizedBox(width: 8),
                       Text(
                         dateKey,
@@ -307,7 +308,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     final picture = pictures[i];
                     final isSelected = selectedPicture?.id == picture.id;
                     return GestureDetector(
-                      onTap: () => _bloc.selectPicture(picture),
+                      onTap: () => _cubit.selectPicture(picture),
                       child: Container(
                         clipBehavior: Clip.antiAlias,
                         decoration: BoxDecoration(
@@ -328,14 +329,13 @@ class _DashboardPageState extends State<DashboardPage> {
                             Image.network(
                               picture.url,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Icon(
-                                    FluentIcons.error,
-                                    color: Colors.red,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Center(
+                                    child: Icon(
+                                      FluentIcons.error,
+                                      color: Colors.red,
+                                    ),
                                   ),
-                                );
-                              },
                               loadingBuilder:
                                   (context, child, loadingProgress) {
                                     if (loadingProgress == null) return child;
@@ -432,7 +432,7 @@ class _DashboardPageState extends State<DashboardPage> {
           if (node.type == NodeType.album && selectedPicture != null)
             InspectorPanel(
               picture: selectedPicture,
-              onClose: () => _bloc.selectPicture(null),
+              onClose: () => _cubit.selectPicture(null),
             ),
         ],
       ),
