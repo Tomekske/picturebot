@@ -36,7 +36,7 @@ func main() {
 
 	// Initialize Services
 	pictureService := service.NewPictureService(pictureRepo)
-	hierarchyService := service.NewHierarchyService(hierarchyRepo)
+	hierarchyService := service.NewHierarchyService(hierarchyRepo, pictureRepo)
 	settingsService := service.NewSettingsService(settingsRepo)
 
 	// Initialize Router

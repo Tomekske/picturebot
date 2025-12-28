@@ -16,7 +16,6 @@ class BackendRepository {
   /// Calls [BackendApi.getLibraryData] to get the raw data.
   /// * If the response is a [List], it wraps the items in a synthetic root
   ///     [HierarchyNode] named "Library".
-  /// * If the response is a [Map], it parses it directly into a [HierarchyNode].
   ///
   /// Returns a root [HierarchyNode]. If an error occurs during fetching or parsing,
   /// it returns a placeholder "Error" node to prevent UI crashes.
@@ -26,20 +25,14 @@ class BackendRepository {
 
       List<HierarchyNode> children = [];
 
-      if (response is List) {
-        children = response
-            .map((json) => HierarchyNode.fromJson(json as Map<String, dynamic>))
-            .toList();
-      } else if (response is Map) {
-        return HierarchyNode.fromJson(response as Map<String, dynamic>);
-      }
+      children = response.map((json) => HierarchyNode.fromJson(json)).toList();
 
       return HierarchyNode(
         id: -1,
         name: "Library",
         type: NodeType.folder,
         children: children,
-        pictures: const [],
+        subFolders: const [],
       );
     } catch (e) {
       if (kDebugMode) {
@@ -74,7 +67,7 @@ class BackendRepository {
   /// Fetches and deserializes application settings.
   ///
   /// Retrieves raw JSON from [BackendApi.getSettings] and converts it into
-  /// a [Settings] model.
+  /// A [Settings] model.
   ///
   /// Returns [Settings.initial] (default values) if the API call fails or
   /// the data is malformed, ensuring the app continues to function.

@@ -1,18 +1,18 @@
+import 'dart:io'; // Required for Image.file
+
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
-import 'package:picturebot/data/enums/picture_status.dart';
 
 import '../../data/enums/node_type.dart';
 import '../../data/models/hierarchy_node.dart';
 import '../../data/models/picture.dart';
+import '../../data/models/sub_folder.dart';
 import '../../data/services/backend_service.dart';
 import '../../logic/hierarchy/hierarchy_cubit.dart';
 import '../../logic/hierarchy/hierarchy_state.dart';
 import '../../logic/settings/settings_cubit.dart';
 import '../dialogs/app_dialogs.dart';
 import '../widgets/inspector_panel.dart';
-import '../widgets/status_icon.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -29,7 +29,6 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     final backendService = context.read<BackendService>();
-    // Initialize the Cubit
     _cubit = HierarchyCubit(backendService);
   }
 
@@ -183,7 +182,6 @@ class _DashboardPageState extends State<DashboardPage> {
     if (node == null) return const SizedBox.shrink();
 
     Widget content;
-
     if (node.type == NodeType.folder) {
       if (node.children.isEmpty) {
         content = _buildEmptyState(
@@ -206,6 +204,13 @@ class _DashboardPageState extends State<DashboardPage> {
               return _buildAddItemCard();
             }
             final child = node.children[index];
+
+            // Calculate total picture count across subfolders for display
+            int picCount = 0;
+            for (var sf in child.subFolders) {
+              picCount += sf.pictures.length;
+            }
+
             return HoverButton(
               onPressed: () => _cubit.selectNode(child),
               builder: (p0, states) {
@@ -235,7 +240,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       Text(
                         child.type == NodeType.folder
                             ? "${child.children.length} items"
-                            : "${child.pictures.length} Pictures",
+                            : "$picCount Pictures",
                         style: FluentTheme.of(context).typography.caption,
                       ),
                     ],
@@ -247,27 +252,23 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       }
     } else {
-      final Map<String, List<Picture>> grouped = {};
-      for (var p in node.pictures) {
-        final key = DateFormat('yyyy-MM-dd').format(p.date);
-        if (!grouped.containsKey(key)) grouped[key] = [];
-        grouped[key]!.add(p);
-      }
-      final sortedKeys = grouped.keys.toList()..sort();
-
-      if (node.pictures.isEmpty) {
+      // Grouping Logic: We don't have Dates anymore.
+      // We group by SubFolder Name (e.g. "JPGs", "RAWs")
+      if (node.subFolders.isEmpty) {
         content = _buildEmptyState(
           icon: FluentIcons.photo2,
-          text: "Album has no pictures",
+          text: "Album has no subfolders (JPGs/RAWs)",
           actionLabel: "Import pictures",
           onAction: () {},
         );
       } else {
         content = ListView.builder(
-          itemCount: sortedKeys.length,
+          itemCount: node.subFolders.length,
           itemBuilder: (context, index) {
-            final dateKey = sortedKeys.elementAt(index);
-            final pictures = grouped[dateKey]!;
+            final SubFolder subFolder = node.subFolders[index];
+            final pictures = subFolder.pictures;
+
+            if (pictures.isEmpty) return const SizedBox.shrink();
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,10 +277,14 @@ class _DashboardPageState extends State<DashboardPage> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Row(
                     children: [
-                      Icon(FluentIcons.calendar, size: 16, color: Colors.blue),
+                      Icon(
+                        FluentIcons.folder_open,
+                        size: 16,
+                        color: Colors.blue,
+                      ),
                       const SizedBox(width: 8),
                       Text(
-                        dateKey,
+                        subFolder.name, // e.g., "JPGs"
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: 8),
@@ -307,6 +312,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   itemBuilder: (c, i) {
                     final picture = pictures[i];
                     final isSelected = selectedPicture?.id == picture.id;
+
                     return GestureDetector(
                       onTap: () => _cubit.selectPicture(picture),
                       child: Container(
@@ -326,8 +332,9 @@ class _DashboardPageState extends State<DashboardPage> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            Image.network(
-                              picture.url,
+                            // UPDATED: Use Image.file instead of Image.network
+                            Image.file(
+                              File(picture.location),
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
                                   Center(
@@ -336,30 +343,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                       color: Colors.red,
                                     ),
                                   ),
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return const Center(child: ProgressRing());
-                                  },
                             ),
-                            if (picture.status == PictureStatus.picked)
-                              Positioned(
-                                top: 4,
-                                left: 4,
-                                child: StatusIcon(
-                                  icon: FluentIcons.heart_fill,
-                                  color: Colors.red,
-                                ),
-                              ),
-                            if (picture.status == PictureStatus.rejected)
-                              const Positioned(
-                                top: 4,
-                                left: 4,
-                                child: StatusIcon(
-                                  icon: FluentIcons.cancel,
-                                  color: Colors.grey,
-                                ),
-                              ),
+
                             Positioned(
                               bottom: 0,
                               left: 0,
@@ -371,13 +356,36 @@ class _DashboardPageState extends State<DashboardPage> {
                                   vertical: 2,
                                 ),
                                 child: Text(
-                                  picture.name,
+                                  picture.fileName,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.6),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  picture.extension
+                                      .replaceAll('.', '')
+                                      .toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 8,
+                                  ),
                                 ),
                               ),
                             ),
