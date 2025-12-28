@@ -1,5 +1,6 @@
+import 'dart:io';
+
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:intl/intl.dart';
 import '../../data/models/picture.dart';
 import 'section_header.dart';
 import 'info_row.dart';
@@ -60,24 +61,26 @@ class InspectorPanel extends StatelessWidget {
                 Container(
                   height: 180,
                   color: Colors.black,
-                  child: const Center(
-                    child: Icon(
-                      FluentIcons.photo2,
-                      size: 48,
-                      color: Colors.grey,
+                  child: Center(
+                    // UPDATED: Use Image.file
+                    child: Image.file(
+                      File(picture.location),
+                      fit: BoxFit.contain,
+                      errorBuilder: (ctx, err, stack) =>
+                          const Icon(FluentIcons.error),
                     ),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  picture.name,
+                  picture.fileName,
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
                 Text(
-                  "${picture.type} • ${picture.exif.size}",
+                  "${picture.type} • ${picture.extension}",
                   style: const TextStyle(color: Colors.grey),
                 ),
 
@@ -93,62 +96,31 @@ class InspectorPanel extends StatelessWidget {
                     ],
                   ),
                   onPressed: () {
-                    // TODO
+                    // TODO: Implement Fullscreen with Image.file
                   },
                 ),
 
                 const SizedBox(height: 24),
 
-                const SectionHeader(title: "Information"),
+                const SectionHeader(title: "File Details"),
                 InfoRow(
-                  label: "Date",
-                  value: DateFormat('yyyy-MM-dd').format(picture.date),
+                  label: "Index",
+                  value: picture.index,
                 ),
 
                 InfoRow(
-                  label: "Time",
-                  value: DateFormat('HH:mm').format(picture.date),
+                  label: "Type",
+                  value: picture.type.name, // e.g., DISPLAY or RAW
                 ),
 
                 const SizedBox(height: 16),
-                const SectionHeader(title: "CAMERA"),
-                InfoRow(label: "Model", value: picture.exif.camera ?? '-'),
-                InfoRow(label: "Lens", value: picture.exif.lens ?? '-'),
-
-                const SizedBox(height: 16),
-                const SectionHeader(title: "SETTINGS"),
-                Row(
-                  children: [
-                    Expanded(
-                      child: InfoRow(
-                        label: "ISO",
-                        value: picture.exif.iso ?? '-',
-                      ),
-                    ),
-                    Expanded(
-                      child: InfoRow(
-                        label: "Aperture",
-                        value: picture.exif.aperture ?? '-',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: InfoRow(
-                        label: "Shutter",
-                        value: picture.exif.shutter ?? '-',
-                      ),
-                    ),
-                    Expanded(
-                      child: InfoRow(
-                        label: "Dimensions",
-                        value: picture.exif.dimensions ?? '-',
-                      ),
-                    ),
-                  ],
+                const SectionHeader(title: "Location"),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Text(
+                    picture.location,
+                    style: FluentTheme.of(context).typography.caption,
+                  ),
                 ),
               ],
             ),

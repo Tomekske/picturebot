@@ -71,8 +71,8 @@ class HierarchyCubit extends Cubit<HierarchyState> {
       parentId: parentId,
       name: name,
       type: type,
-      children: [],
-      pictures: [],
+      children: const [],
+      subFolders: const [],
     );
 
     try {

@@ -1,54 +1,61 @@
 import 'package:equatable/equatable.dart';
-
 import '../enums/node_type.dart';
-import 'picture.dart';
+import 'sub_folder.dart';
 
 class HierarchyNode extends Equatable {
   final int id;
-  final String name;
-  final NodeType type;
   final int? parentId;
+  final NodeType type;
+  final String name;
+  final String? uuid;
   final List<HierarchyNode> children;
-  final List<Picture> pictures;
+  final List<SubFolder> subFolders;
 
-  HierarchyNode({
+  const HierarchyNode({
     required this.id,
-    required this.name,
-    required this.type,
     this.parentId,
+    required this.type,
+    required this.name,
+    this.uuid,
     this.children = const [],
-    this.pictures = const [],
+    this.subFolders = const [],
   });
 
   HierarchyNode copyWith({
+    int? id,
+    int? parentId,
+    NodeType? type,
     String? name,
+    String? uuid,
     List<HierarchyNode>? children,
-    List<Picture>? pictures,
+    List<SubFolder>? subFolders,
   }) {
     return HierarchyNode(
-      id: id,
+      id: id ?? this.id,
+      parentId: parentId ?? this.parentId,
+      type: type ?? this.type,
       name: name ?? this.name,
-      type: type,
-      parentId: parentId,
+      uuid: uuid ?? this.uuid,
       children: children ?? this.children,
-      pictures: pictures ?? this.pictures,
+      subFolders: subFolders ?? this.subFolders,
     );
   }
 
   factory HierarchyNode.fromJson(Map<String, dynamic> json) {
     return HierarchyNode(
       id: json['id'] as int,
-      name: json['name'] as String,
-      type: NodeType.values.byName(json['type'] as String),
       parentId: json['parent_id'] as int?,
+      type: NodeType.values.byName(json['type'] as String),
+      name: json['name'] as String,
+      uuid: json['uuid'] as String?,
       children:
           (json['children'] as List<dynamic>?)
               ?.map((e) => HierarchyNode.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      pictures:
-          (json['pictures'] as List<dynamic>?)
-              ?.map((e) => Picture.fromJson(e as Map<String, dynamic>))
+      subFolders:
+          (json['sub_folders'] as List<dynamic>?)
+              ?.map((e) => SubFolder.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
     );
@@ -57,21 +64,23 @@ class HierarchyNode extends Equatable {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
-      'type': type.name,
       'parent_id': parentId,
+      'type': type.name,
+      'name': name,
+      'uuid': uuid,
       'children': children.map((node) => node.toJson()).toList(),
-      'pictures': pictures.map((pic) => pic.toJson()).toList(),
+      'sub_folders': subFolders.map((sf) => sf.toJson()).toList(),
     };
   }
 
   @override
   List<Object?> get props => [
     id,
-    name,
-    type,
     parentId,
+    type,
+    name,
+    uuid,
     children,
-    pictures,
+    subFolders,
   ];
 }

@@ -23,7 +23,11 @@ func (r *HierarchyRepository) Create(node *model.Hierarchy) error {
 func (r *HierarchyRepository) FindAll() ([]*model.Hierarchy, error) {
 	var nodes []*model.Hierarchy
 	// Retrieve all nodes ordered by Name so the tree looks nice
-	err := r.db.Order("name ASC").Find(&nodes).Error
+	err := r.db.
+		Preload("SubFolders").
+		Preload("SubFolders.Pictures").
+		Order("name ASC").
+		Find(&nodes).Error
 	return nodes, err
 }
 
