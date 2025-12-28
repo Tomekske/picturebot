@@ -16,7 +16,6 @@ class BackendRepository {
   /// Calls [BackendApi.getLibraryData] to get the raw data.
   /// * If the response is a [List], it wraps the items in a synthetic root
   ///     [HierarchyNode] named "Library".
-  /// * If the response is a [Map], it parses it directly into a [HierarchyNode].
   ///
   /// Returns a root [HierarchyNode]. If an error occurs during fetching or parsing,
   /// it returns a placeholder "Error" node to prevent UI crashes.

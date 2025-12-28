@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"picturebot-backend/internal/model"
@@ -78,7 +79,8 @@ func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, 
 	// 4. Generate UUID for Albums
 	// 4. Album Logic (UUID + Disk Creation + Auto-Subfolders)
 	if req.Type == model.TypeAlbum {
-		newNode.UUID = uuid.NewString()
+        id, _ := uuid.NewV7()
+		newNode.UUID = id.String()
 
 		// If SourcePath is provided, we assume we want the standard "RAWs/JPGs" structure
 		if req.SourcePath != "" {
@@ -173,7 +175,12 @@ func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy 
 		if e.IsDir() {
 			continue
 		}
-		info, _ := e.Info()
+
+		info, err := e.Info()
+		if err != nil {
+			return fmt.Errorf("failed to get file info for %s: %w", e.Name(), err)
+		}
+
 		ext := filepath.Ext(e.Name())                 // .ARW
 		baseName := strings.TrimSuffix(e.Name(), ext) // Miami_Beach_001
 
@@ -280,9 +287,18 @@ func getGroupTime(g *pictureGroup) time.Time {
 }
 
 func copyFile(src, dst string) error {
-	input, err := os.ReadFile(src)
+	srcFile, err := os.Open(src)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(dst, input, 0644)
+	defer srcFile.Close()
+
+	dstFile, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, srcFile)
+	return err
 }

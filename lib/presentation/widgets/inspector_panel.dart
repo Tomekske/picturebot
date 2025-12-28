@@ -110,7 +110,7 @@ class InspectorPanel extends StatelessWidget {
 
                 InfoRow(
                   label: "Type",
-                  value: picture.type.name, // e.g., DISPLAY or RAW
+                  value: picture.type.name,
                 ),
 
                 const SizedBox(height: 16),

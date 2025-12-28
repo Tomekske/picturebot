@@ -58,7 +58,7 @@ class Picture extends Equatable {
       'file_name': fileName,
       'index': index,
       'extension': extension,
-      'type': type,
+      'type': type.name,
       'location': location,
       'sub_folder_id': subFolderId,
     };
