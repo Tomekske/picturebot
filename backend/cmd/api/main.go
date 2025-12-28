@@ -21,7 +21,6 @@ func main() {
 
 	// Auto-migrate schema
 	if err := db.AutoMigrate(
-		&model.Album{},
 		&model.Picture{},
 		&model.SubFolder{},
 		&model.Hierarchy{},
@@ -30,25 +29,29 @@ func main() {
 		log.Fatal("failed to migrate:", err)
 	}
 
-	albumRepo := repository.NewAlbumRepository(db)
+	// Initialize Repositories
 	pictureRepo := repository.NewPictureRepository(db)
 	hierarchyRepo := repository.NewHierarchyRepository(db)
 	settingsRepo := repository.NewSettingsRepository(db)
 
-	albumService := service.NewAlbumService(albumRepo, pictureRepo)
+	// Initialize Services
 	pictureService := service.NewPictureService(pictureRepo)
 	hierarchyService := service.NewHierarchyService(hierarchyRepo)
 	settingsService := service.NewSettingsService(settingsRepo)
 
+	// Initialize Router
 	router := gin.Default()
-	router.GET("/albums", api.GetAlbums(albumService))
+
+	// Routes
 	router.GET("/pictures", api.GetPictures(pictureService))
 	router.GET("/pictures/:id", api.FindByID(pictureService))
-	router.GET("/pictures/album/:id", api.FindByAlbumID(pictureService))
-	router.POST("/albums", api.CreateAlbum(albumService))
+	router.GET("/pictures/hierarchy/:id", api.FindByHierarchyID(pictureService))
+
 	router.POST("/hierarchy", api.CreateNode(hierarchyService))
 	router.GET("/hierarchy", api.GetHierarchy(hierarchyService))
+
 	router.GET("/settings", api.GetSettings(settingsService))
 	router.POST("/settings", api.UpdateSettings(settingsService))
+
 	router.Run("localhost:8080")
 }

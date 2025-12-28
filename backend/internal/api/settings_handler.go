@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 	"picturebot-backend/internal/model"
 	"picturebot-backend/internal/service"
@@ -9,30 +8,28 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetSettings(service *service.SettingsService) gin.HandlerFunc {
+func GetSettings(s *service.SettingsService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		settings, err := service.GetSettings()
+		settings, err := s.GetSettings()
 		if err != nil {
-			log.Println("failed to get settings:", err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch settings"})
 			return
 		}
 		c.JSON(http.StatusOK, settings)
 	}
 }
 
-func UpdateSettings(service *service.SettingsService) gin.HandlerFunc {
+func UpdateSettings(s *service.SettingsService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req model.Settings
 
 		// Bind JSON to struct
 		if err := c.ShouldBindJSON(&req); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 			return
 		}
 
-		if err := service.UpdateSettings(&req); err != nil {
-			log.Println("failed to update settings:", err)
+		if err := s.UpdateSettings(&req); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update settings"})
 			return
 		}
