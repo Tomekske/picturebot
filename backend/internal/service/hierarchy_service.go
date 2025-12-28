@@ -79,8 +79,12 @@ func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, 
 	// 4. Generate UUID for Albums
 	// 4. Album Logic (UUID + Disk Creation + Auto-Subfolders)
 	if req.Type == model.TypeAlbum {
-        id, _ := uuid.NewV7()
-		newNode.UUID = id.String()
+        id, err := uuid.NewV7()
+        if err != nil {
+            return nil, fmt.Errorf("failed to generate UUID: %w", err)
+        }
+
+        newNode.UUID = id.String()
 
 		// If SourcePath is provided, we assume we want the standard "RAWs/JPGs" structure
 		if req.SourcePath != "" {
