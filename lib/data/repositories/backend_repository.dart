@@ -19,16 +19,20 @@ class BackendRepository {
   ///
   /// Returns a root [HierarchyNode]. If an error occurs during fetching or parsing,
   /// it returns a placeholder "Error" node to prevent UI crashes.
-  Future<HierarchyNode> getInitialData() async {
+  Future<HierarchyNode?> getInitialData() async {
     try {
       final response = await BackendApi.getLibraryData();
 
-      List<HierarchyNode> children = [];
+      if (response == null) {
+        return null;
+      }
 
-      children = response.map((json) => HierarchyNode.fromJson(json)).toList();
+      final List<HierarchyNode> children = response
+          .map((json) => HierarchyNode.fromJson(json))
+          .toList();
 
       return HierarchyNode(
-        id: -1,
+        id: 0,
         name: "Library",
         type: NodeType.folder,
         children: children,
@@ -39,11 +43,7 @@ class BackendRepository {
         print("Error loading library data: $e");
       }
 
-      return HierarchyNode(
-        id: -1,
-        name: "Error",
-        type: NodeType.folder,
-      );
+      return null;
     }
   }
 

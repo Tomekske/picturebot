@@ -4,12 +4,12 @@ import '../../data/models/hierarchy_node.dart';
 
 class HierarchyDialog extends StatefulWidget {
   final Function(String name, NodeType type, int parentId) onAdd;
-  final List<HierarchyNode> folders;
+  final List<HierarchyNode>? folders;
 
   const HierarchyDialog({
     super.key,
     required this.onAdd,
-    required this.folders,
+    this.folders,
   });
 
   @override
@@ -21,13 +21,20 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
   NodeType _selectedType = NodeType.album;
   int? _selectedParentId;
 
+  // Helper to safely handle null folders list
+  List<HierarchyNode> get _safeFolders => widget.folders ?? [];
+
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
-    // Default to the first folder if available
-    if (widget.folders.isNotEmpty) {
-      _selectedParentId = widget.folders.first.id;
+
+    if (_safeFolders.isNotEmpty) {
+      _selectedParentId = _safeFolders.first.id;
+      _selectedType = NodeType.album;
+    } else {
+      _selectedParentId = 0;
+      _selectedType = NodeType.folder;
     }
   }
 
@@ -76,33 +83,42 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            "Parent",
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey,
+
+          // Dynamically show Parent Selector or Initialization Info
+          if (_safeFolders.isNotEmpty) ...[
+            const Text(
+              "PARENT",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          ComboBox<int>(
-            value: _selectedParentId,
-            isExpanded: true,
-            items: widget.folders.map((node) {
-              return ComboBoxItem<int>(
-                value: node.id,
-                child: Text(node.name),
-              );
-            }).toList(),
-            onChanged: (v) {
-              if (v != null) {
-                setState(() => _selectedParentId = v);
-              }
-            },
-          ),
+            const SizedBox(height: 8),
+            ComboBox<int>(
+              value: _selectedParentId,
+              isExpanded: true,
+              items: _safeFolders
+                  .map(
+                    (node) => ComboBoxItem(
+                      value: node.id,
+                      child: Text(node.name),
+                    ),
+                  )
+                  .toList(),
+              onChanged: (v) => setState(() => _selectedParentId = v),
+            ),
+          ] else ...[
+            const InfoBar(
+              title: Text('Initializing Library'),
+              content: Text('This will be your first root folder.'),
+              severity: InfoBarSeverity.info,
+            ),
+          ],
+
           const SizedBox(height: 16),
           const Text(
-            "Name",
+            "NAME",
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -113,6 +129,7 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
           TextBox(
             controller: _nameController,
             placeholder: 'Example: Vacation 2024',
+            onSubmitted: (_) => _handleCreate(),
           ),
         ],
       ),
@@ -123,20 +140,22 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
         ),
         FilledButton(
           child: const Text('Create'),
-          onPressed: () {
-            final name = _nameController.text.trim();
-            if (_selectedParentId != null && name.isNotEmpty) {
-              widget.onAdd(
-                name,
-                _selectedType,
-                _selectedParentId!,
-              );
-              Navigator.pop(context);
-            }
-          },
+          onPressed: _handleCreate,
         ),
       ],
     );
+  }
+
+  void _handleCreate() {
+    final name = _nameController.text.trim();
+    if (_selectedParentId != null && name.isNotEmpty) {
+      widget.onAdd(
+        name,
+        _selectedType,
+        _selectedParentId!,
+      );
+      Navigator.pop(context);
+    }
   }
 
   Widget _buildTypeButton({
