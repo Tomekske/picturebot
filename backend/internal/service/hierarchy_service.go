@@ -162,6 +162,8 @@ func (s *HierarchyService) GetFullHierarchy() ([]*model.Hierarchy, error) {
 
 // processAndImportPictures handles file grouping, sorting, renaming, and copying.
 func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy *model.Hierarchy) error {
+	start := time.Now()
+
 	entries, err := os.ReadDir(sourceDir)
 	if err != nil {
 		slog.Error("IO error: failed to read source directory", "dir", sourceDir, "error", err)
@@ -207,6 +209,8 @@ func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy 
 	for _, sf := range hierarchy.SubFolders {
 		subFolderIDs[sf.Name] = sf.ID
 	}
+
+	pictureCount := 0
 
 	for i, group := range sortedGroups {
 		newIndexStr := fmt.Sprintf("%06d", i+1)
@@ -255,9 +259,21 @@ func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy 
 				slog.Error("IO error: file copy failed", "src", file.FullPath, "dst", destPath, "error", err)
 				return fmt.Errorf("failed to copy file %s: %w", file.Name, err)
 			}
+
+			pictureCount++
+
 			slog.Debug("File imported", "original", file.Name, "imported_as", newFileName)
 		}
 	}
+
+	duration := time.Since(start)
+
+	slog.Info("Import complete",
+		"album", hierarchy.Name,
+		"total_pictures", pictureCount,
+		"grouped_pictures", pictureCount/2,
+		"duration_msg", fmt.Sprintf("Pictures processed in: %.0fs (%s)", duration.Seconds(), duration.Round(time.Second)),
+	)
 
 	return nil
 }
