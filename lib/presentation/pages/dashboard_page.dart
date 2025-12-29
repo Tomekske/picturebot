@@ -76,6 +76,12 @@ class _DashboardPageState extends State<DashboardPage> {
           );
         }
 
+        if (state.status == HierarchyStatus.failure) {
+          return ScaffoldPage(
+            content: Center(child: Text('Error: ${state.errorMessage}')),
+          );
+        }
+
         // Handle Empty Database State
         if (state.rootNode == null) {
           return ScaffoldPage(
@@ -85,12 +91,6 @@ class _DashboardPageState extends State<DashboardPage> {
               actionLabel: "Initialize Library",
               onAction: () => _openAddDialog(),
             ),
-          );
-        }
-
-        if (state.status == HierarchyStatus.failure) {
-          return ScaffoldPage(
-            content: Center(child: Text('Error: ${state.errorMessage}')),
           );
         }
 

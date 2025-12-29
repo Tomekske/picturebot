@@ -32,13 +32,11 @@ class BackendApi {
           return null;
         }
 
-        final List<dynamic> decoded = jsonDecode(response.body);
-
-        if (decoded == null || decoded is! List) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is! List) {
           return null;
         }
-
-        return decoded.cast<Map<String, dynamic>>();
+        return (decoded as List).cast<Map<String, dynamic>>();
       } else {
         throw Exception(
           'Failed to load hierarchy. Status Code: ${response.statusCode}',
