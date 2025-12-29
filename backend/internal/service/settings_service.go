@@ -19,6 +19,7 @@ func (s *SettingsService) GetSettings() (*model.Settings, error) {
 	if err != nil {
 		slog.Error("Service error: Failed to get settings", "error", err)
 	}
+
 	return settings, err
 }
 
@@ -26,8 +27,11 @@ func (s *SettingsService) UpdateSettings(settings *model.Settings) error {
 	err := s.repo.UpdateSettings(settings)
 	if err != nil {
 		slog.Error("Service error: Failed to update settings", "error", err)
-	} else {
-		slog.Info("System settings updated", "id", settings.ID)
+
+		return err
 	}
-	return err
+
+	slog.Info("System settings updated", "id", settings.ID)
+	
+	return nil
 }

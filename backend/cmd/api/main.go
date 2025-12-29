@@ -24,7 +24,8 @@ func main() {
 	db, err := gorm.Open(sqlite.Open("C:\\Users\\joost\\Documents\\Picturebot-Go\\dev.db"), &gorm.Config{})
 
 	if err != nil {
-		slog.Error("failed to connect database: %v", err)
+		slog.Error("failed to connect database", "error", err)
+		os.Exit(1)
 	}
 
 	currentDate := time.Now().Format("2006-01-02")
@@ -61,7 +62,8 @@ func main() {
 		&model.Hierarchy{},
 		&model.Settings{},
 	); err != nil {
-		slog.Error("failed to migrate:", err)
+		slog.Error("failed to migrate", "error", err)
+		os.Exit(1)
 	}
 
 	// Initialize Repositories

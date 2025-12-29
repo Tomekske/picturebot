@@ -64,6 +64,7 @@ func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, 
 		}
 
 		if exists {
+			slog.Info("Service: Attempted to create duplicate folder", "name", req.Name)
 			return nil, errors.New("a folder with this name already exists here")
 		}
 	}
@@ -135,6 +136,7 @@ func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, 
 func (s *HierarchyService) GetFullHierarchy() ([]*model.Hierarchy, error) {
 	allNodes, err := s.repo.FindAll()
 	if err != nil {
+		slog.Error("Service: Failed to retrieve full hierarchy", "error", err)
 		return nil, err
 	}
 
