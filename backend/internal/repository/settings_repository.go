@@ -23,7 +23,5 @@ func (r *SettingsRepository) GetSettings() (*model.Settings, error) {
 
 func (r *SettingsRepository) UpdateSettings(settings *model.Settings) error {
 	settings.ID = 1
-	err := r.db.Save(settings).Error
-
-	return err
+	return r.db.Save(settings).Error
 }

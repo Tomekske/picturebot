@@ -253,13 +253,13 @@ func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy 
 				SubFolderID: sfID,
 			}
 
-			if err := s.pictureRepo.Create(&pic); err != nil {
-				return err
-			}
-
 			if err := copyFile(file.FullPath, destPath); err != nil {
 				slog.Error("IO error: file copy failed", "src", file.FullPath, "dst", destPath, "error", err)
 				return fmt.Errorf("failed to copy file %s: %w", file.Name, err)
+			}
+
+			if err := s.pictureRepo.Create(&pic); err != nil {
+				return err
 			}
 
 			pictureCount++
@@ -273,7 +273,7 @@ func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy 
 	slog.Info("Import complete",
 		"album", hierarchy.Name,
 		"total_pictures", pictureCount,
-		"grouped_pictures", pictureCount/2,
+		"grouped_pictures", len(sortedGroups),
 		"duration_msg", fmt.Sprintf("Pictures processed in: %.0fs (%s)", duration.Seconds(), duration.Round(time.Second)),
 	)
 
