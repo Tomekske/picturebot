@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"picturebot-backend/internal/model"
@@ -47,27 +48,27 @@ type CreateNodeRequest struct {
 	SourcePath string              `json:"source_path"`
 }
 
+// CreateNode handles the business logic for creating folders and albums, including disk operations.
 func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, error) {
-	// Handle Root ParentID
 	var parentID *uint
 	if req.ParentID != 0 {
 		parentID = &req.ParentID
 	}
 
-	// 2. Prevent Duplicate Folders
+	// Prevent Duplicate Folders
 	if req.Type == model.TypeFolder {
 		exists, err := s.repo.FindDuplicate(parentID, req.Name, req.Type)
-
 		if err != nil {
+			slog.Error("Service error: failed to check for duplicate folders", "name", req.Name, "error", err)
 			return nil, err
 		}
 
 		if exists {
+			slog.Info("Service: Attempted to create duplicate folder", "name", req.Name)
 			return nil, errors.New("a folder with this name already exists here")
 		}
 	}
 
-	// 3. Prepare Node
 	newNode := &model.Hierarchy{
 		ParentID:   parentID,
 		Name:       req.Name,
@@ -76,22 +77,21 @@ func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, 
 		SubFolders: req.SubFolders,
 	}
 
-	// 4. Generate UUID for Albums
-	// 4. Album Logic (UUID + Disk Creation + Auto-Subfolders)
+	// Album Logic: UUID generation and directory creation
 	if req.Type == model.TypeAlbum {
-        id, err := uuid.NewV7()
-        if err != nil {
-            return nil, fmt.Errorf("failed to generate UUID: %w", err)
-        }
+		id, err := uuid.NewV7()
+		if err != nil {
+			slog.Error("Service error: failed to generate UUID", "error", err)
+			return nil, fmt.Errorf("failed to generate UUID: %w", err)
+		}
 
-        newNode.UUID = id.String()
+		newNode.UUID = id.String()
 
-		// If SourcePath is provided, we assume we want the standard "RAWs/JPGs" structure
 		if req.SourcePath != "" {
-			libraryRoot := "M:\\Picturebot-Test"
+			libraryRoot := "M:\\Picturebot-Test" // Root path for library
 			albumRoot := filepath.Join(libraryRoot, newNode.UUID)
 
-			// A. Create SubFolder structs (GORM will generate IDs on Save)
+			// Prepare standard subfolders
 			standardFolders := []string{"RAWs", "JPGs"}
 			for _, fName := range standardFolders {
 				newNode.SubFolders = append(newNode.SubFolders, model.SubFolder{
@@ -100,13 +100,15 @@ func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, 
 				})
 			}
 
-			// B. Create Directories on Disk
+			// Create directories on disk
 			if err := os.MkdirAll(albumRoot, 0755); err != nil {
+				slog.Error("IO error: failed to create album directory", "path", albumRoot, "error", err)
 				return nil, fmt.Errorf("failed to create album directory: %w", err)
 			}
 
 			for _, sub := range newNode.SubFolders {
 				if err := os.MkdirAll(sub.Location, 0755); err != nil {
+					slog.Error("IO error: failed to create subfolder", "path", sub.Location, "error", err)
 					return nil, fmt.Errorf("failed to create subfolder %s: %w", sub.Name, err)
 				}
 			}
@@ -117,39 +119,34 @@ func (s *HierarchyService) CreateNode(req CreateNodeRequest) (*model.Hierarchy, 
 		return nil, err
 	}
 
-	// 6. Trigger Import (After Save)
-	// We do this after saving because we need the SubFolder IDs from the DB.
+	// Trigger Import process if a SourcePath is provided
 	if req.Type == model.TypeAlbum && req.SourcePath != "" {
-		fmt.Printf("Starting import from %s into Album %s...\n", req.SourcePath, newNode.Name)
+		slog.Info("Starting import", "source", req.SourcePath, "album", newNode.Name)
 		if err := s.processAndImportPictures(req.SourcePath, newNode); err != nil {
-			fmt.Printf("Error importing pictures: %v\n", err)
+			slog.Error("Import failed", "album", newNode.Name, "error", err)
 			return newNode, fmt.Errorf("album created but import failed: %w", err)
 		}
-		fmt.Println("Import completed successfully.")
+		slog.Info("Import completed successfully", "album", newNode.Name)
 	}
 
 	return newNode, nil
 }
 
-// GetFullHierarchy transforms the flat database rows into a nested tree structure.
+// GetFullHierarchy transforms flat database rows into a nested tree structure.
 func (s *HierarchyService) GetFullHierarchy() ([]*model.Hierarchy, error) {
-	// 1. Get all nodes flat
 	allNodes, err := s.repo.FindAll()
 	if err != nil {
+		slog.Error("Service: Failed to retrieve full hierarchy", "error", err)
 		return nil, err
 	}
 
-	// 2. Create a lookup map
 	nodeMap := make(map[uint]*model.Hierarchy)
 	for _, node := range allNodes {
 		node.Children = []*model.Hierarchy{}
-
 		nodeMap[node.ID] = node
 	}
 
-	// 3. Build Tree
 	var rootNodes []*model.Hierarchy
-
 	for _, node := range allNodes {
 		if node.ParentID == nil {
 			rootNodes = append(rootNodes, node)
@@ -157,7 +154,6 @@ func (s *HierarchyService) GetFullHierarchy() ([]*model.Hierarchy, error) {
 			if parent, found := nodeMap[*node.ParentID]; found {
 				parent.Children = append(parent.Children, node)
 			} else {
-				// Handle orphans by showing them at root
 				rootNodes = append(rootNodes, node)
 			}
 		}
@@ -166,15 +162,17 @@ func (s *HierarchyService) GetFullHierarchy() ([]*model.Hierarchy, error) {
 	return rootNodes, nil
 }
 
+// processAndImportPictures handles file grouping, sorting, renaming, and copying.
 func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy *model.Hierarchy) error {
+	start := time.Now()
+
 	entries, err := os.ReadDir(sourceDir)
 	if err != nil {
+		slog.Error("IO error: failed to read source directory", "dir", sourceDir, "error", err)
 		return fmt.Errorf("failed to read source dir: %w", err)
 	}
 
-	// 1. Group files by Name (e.g. "Miami_Beach_001")
 	groupMap := make(map[string]*pictureGroup)
-
 	for _, e := range entries {
 		if e.IsDir() {
 			continue
@@ -182,11 +180,12 @@ func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy 
 
 		info, err := e.Info()
 		if err != nil {
+			slog.Warn("Import warning: failed to get file info", "file", e.Name(), "error", err)
 			return fmt.Errorf("failed to get file info for %s: %w", e.Name(), err)
 		}
 
-		ext := filepath.Ext(e.Name())                 // .ARW
-		baseName := strings.TrimSuffix(e.Name(), ext) // Miami_Beach_001
+		ext := filepath.Ext(e.Name())
+		baseName := strings.TrimSuffix(e.Name(), ext)
 
 		if _, exists := groupMap[baseName]; !exists {
 			groupMap[baseName] = &pictureGroup{BaseName: baseName}
@@ -200,7 +199,6 @@ func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy 
 		})
 	}
 
-	// 2. Sort Groups by Creation Date
 	var sortedGroups []*pictureGroup
 	for _, g := range groupMap {
 		sortedGroups = append(sortedGroups, g)
@@ -209,20 +207,18 @@ func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy 
 		return getGroupTime(sortedGroups[i]).Before(getGroupTime(sortedGroups[j]))
 	})
 
-	// 3. Map SubFolder Names to IDs
-	// The 'hierarchy.SubFolders' slice has valid IDs now because we saved it to DB earlier.
 	subFolderIDs := make(map[string]uint)
 	for _, sf := range hierarchy.SubFolders {
 		subFolderIDs[sf.Name] = sf.ID
 	}
 
-	// 4. Rename, Copy, and Save
+	pictureCount := 0
+
 	for i, group := range sortedGroups {
-		newIndexStr := fmt.Sprintf("%06d", i+1) // "000001"
+		newIndexStr := fmt.Sprintf("%06d", i+1)
 
 		for _, file := range group.Files {
 			upperExt := strings.ToUpper(file.Extension)
-
 			targetFolderName := "JPGs"
 			picType := "jpg"
 
@@ -231,14 +227,12 @@ func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy 
 				picType = "raw"
 			}
 
-			// Ensure we have a valid destination ID
 			sfID, ok := subFolderIDs[targetFolderName]
 			if !ok {
-				fmt.Printf("Warning: Subfolder '%s' not found for file %s. Skipping.\n", targetFolderName, file.Name)
+				slog.Warn("Import warning: target subfolder not found", "folder", targetFolderName, "file", file.Name)
 				continue
 			}
 
-			// Find destination path
 			var destFolderLocation string
 			for _, sf := range hierarchy.SubFolders {
 				if sf.ID == sfID {
@@ -250,7 +244,6 @@ func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy 
 			newFileName := newIndexStr + file.Extension
 			destPath := filepath.Join(destFolderLocation, newFileName)
 
-			// Create Picture Model
 			pic := model.Picture{
 				Index:       newIndexStr,
 				FileName:    newFileName,
@@ -260,25 +253,35 @@ func (s *HierarchyService) processAndImportPictures(sourceDir string, hierarchy 
 				SubFolderID: sfID,
 			}
 
-			// Save Picture to DB
+			if err := copyFile(file.FullPath, destPath); err != nil {
+				slog.Error("IO error: file copy failed", "src", file.FullPath, "dst", destPath, "error", err)
+				return fmt.Errorf("failed to copy file %s: %w", file.Name, err)
+			}
+
 			if err := s.pictureRepo.Create(&pic); err != nil {
 				return err
 			}
 
-			// Copy File on Disk
-			if err := copyFile(file.FullPath, destPath); err != nil {
-				return fmt.Errorf("failed to copy file %s: %w", file.Name, err)
-			}
-			fmt.Printf("Imported: %s -> %s\n", file.Name, newFileName)
+			pictureCount++
+
+			slog.Debug("File imported", "original", file.Name, "imported_as", newFileName)
 		}
 	}
+
+	duration := time.Since(start)
+
+	slog.Info("Import complete",
+		"album", hierarchy.Name,
+		"total_pictures", pictureCount,
+		"grouped_pictures", len(sortedGroups),
+		"duration_msg", fmt.Sprintf("Pictures processed in: %.0fs (%s)", duration.Seconds(), duration.Round(time.Second)),
+	)
 
 	return nil
 }
 
 func getGroupTime(g *pictureGroup) time.Time {
 	for _, f := range g.Files {
-		// Prioritize RAW creation time
 		upper := strings.ToUpper(f.Extension)
 		if upper == ".ARW" || upper == ".CR2" || upper == ".NEF" {
 			return f.ModTime

@@ -40,6 +40,7 @@ func CreateNode(s *service.HierarchyService) gin.HandlerFunc {
 				c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 				return
 			}
+
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create node"})
 			return
 		}
@@ -53,9 +54,11 @@ func GetHierarchy(s *service.HierarchyService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tree, err := s.GetFullHierarchy()
 		if err != nil {
+
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to build hierarchy"})
 			return
 		}
+		
 		c.JSON(http.StatusOK, tree)
 	}
 }

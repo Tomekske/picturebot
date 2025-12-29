@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log/slog"
 	"net/http"
 	"picturebot-backend/internal/model"
 	"picturebot-backend/internal/service"
@@ -12,9 +13,12 @@ func GetSettings(s *service.SettingsService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		settings, err := s.GetSettings()
 		if err != nil {
+			slog.Error("API: Failed to fetch system settings", "error", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch settings"})
 			return
 		}
+
+		slog.Debug("API: Settings retrieved")
 		c.JSON(http.StatusOK, settings)
 	}
 }
@@ -25,15 +29,18 @@ func UpdateSettings(s *service.SettingsService) gin.HandlerFunc {
 
 		// Bind JSON to struct
 		if err := c.ShouldBindJSON(&req); err != nil {
+			slog.Warn("API: Invalid settings update request", "error", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 			return
 		}
 
 		if err := s.UpdateSettings(&req); err != nil {
+			slog.Error("API: Failed to save settings to database", "error", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update settings"})
 			return
 		}
 
+		slog.Info("API: Settings updated successfully")
 		c.JSON(http.StatusOK, req)
 	}
 }

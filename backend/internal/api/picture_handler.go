@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log/slog"
 	"net/http"
 	"picturebot-backend/internal/model"
 	"picturebot-backend/internal/service"
@@ -25,6 +26,7 @@ func FindByID(s *service.PictureService) gin.HandlerFunc {
 		idStr := c.Param("id")
 		id, err := strconv.ParseUint(idStr, 10, 32)
 		if err != nil {
+			slog.Warn("API: Invalid ID format in FindByID", "input", idStr, "error", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID format"})
 			return
 		}
@@ -38,12 +40,12 @@ func FindByID(s *service.PictureService) gin.HandlerFunc {
 	}
 }
 
-// FindByHierarchyID replaces FindByAlbumID
 func FindByHierarchyID(s *service.PictureService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		idStr := c.Param("id")
 		id, err := strconv.ParseUint(idStr, 10, 32)
 		if err != nil {
+			slog.Warn("API: Invalid Hierarchy ID format", "input", idStr, "error", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Hierarchy ID format"})
 			return
 		}
@@ -62,6 +64,7 @@ func CreatePicture(s *service.PictureService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req model.Picture
 		if err := c.ShouldBindJSON(&req); err != nil {
+			slog.Warn("API: Invalid request body for CreatePicture", "error", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 			return
 		}
@@ -69,6 +72,7 @@ func CreatePicture(s *service.PictureService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create picture"})
 			return
 		}
+		
 		c.JSON(http.StatusCreated, req)
 	}
 }
