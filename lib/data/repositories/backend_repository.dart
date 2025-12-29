@@ -32,7 +32,7 @@ class BackendRepository {
           .toList();
 
       return HierarchyNode(
-        id: -1,
+        id: 0,
         name: "Library",
         type: NodeType.folder,
         children: children,
