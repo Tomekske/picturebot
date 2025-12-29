@@ -57,8 +57,8 @@ class _DashboardPageState extends State<DashboardPage> {
     AppDialogs.showHierarchyDialog(
       context,
       allFolders,
-      (name, type, parentId) {
-        _cubit.addNode(name, type, parentId);
+      (name, type, parentId, sourcePath) {
+        _cubit.addNode(name, type, parentId, sourcePath: sourcePath);
       },
     );
   }

@@ -1,9 +1,11 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:picturebot/data/enums/node_type.dart';
 import '../../data/models/hierarchy_node.dart';
 
 class HierarchyDialog extends StatefulWidget {
-  final Function(String name, NodeType type, int parentId) onAdd;
+  final Function(String name, NodeType type, int parentId, String? sourcePath)
+  onAdd;
   final List<HierarchyNode>? folders;
 
   const HierarchyDialog({
@@ -18,16 +20,18 @@ class HierarchyDialog extends StatefulWidget {
 
 class _HierarchyDialogState extends State<HierarchyDialog> {
   late TextEditingController _nameController;
+  late TextEditingController _sourcePathController;
+
   NodeType _selectedType = NodeType.album;
   int? _selectedParentId;
 
-  // Helper to safely handle null folders list
   List<HierarchyNode> get _safeFolders => widget.folders ?? [];
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController();
+    _sourcePathController = TextEditingController();
 
     if (_safeFolders.isNotEmpty) {
       _selectedParentId = _safeFolders.first.id;
@@ -41,7 +45,17 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
   @override
   void dispose() {
     _nameController.dispose();
+    _sourcePathController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickSourcePath() async {
+    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    if (selectedDirectory != null) {
+      setState(() {
+        _sourcePathController.text = selectedDirectory;
+      });
+    }
   }
 
   @override
@@ -83,8 +97,6 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
             ],
           ),
           const SizedBox(height: 16),
-
-          // Dynamically show Parent Selector or Initialization Info
           if (_safeFolders.isNotEmpty) ...[
             const Text(
               "PARENT",
@@ -115,7 +127,6 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
               severity: InfoBarSeverity.info,
             ),
           ],
-
           const SizedBox(height: 16),
           const Text(
             "NAME",
@@ -131,6 +142,40 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
             placeholder: 'Example: Vacation 2024',
             onSubmitted: (_) => _handleCreate(),
           ),
+
+          if (_selectedType == NodeType.album) ...[
+            const SizedBox(height: 16),
+            const Text(
+              "SOURCE FOLDER",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: TextBox(
+                    readOnly: true,
+                    placeholder: "Select folder to import...",
+                    controller: _sourcePathController,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Button(
+                  onPressed: _pickSourcePath,
+                  child: const Text("Browse"),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "Pictures will be imported from this folder.",
+              style: FluentTheme.of(context).typography.caption,
+            ),
+          ],
         ],
       ),
       actions: [
@@ -153,6 +198,9 @@ class _HierarchyDialogState extends State<HierarchyDialog> {
         name,
         _selectedType,
         _selectedParentId!,
+        _sourcePathController.text.isNotEmpty
+            ? _sourcePathController.text
+            : null,
       );
       Navigator.pop(context);
     }

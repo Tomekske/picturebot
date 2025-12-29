@@ -35,6 +35,16 @@ class BackendService {
     return _repository.createNode(node);
   }
 
+  /// Creates a new album in the hierarchy and triggers the import of pictures.
+  ///
+  /// This method is specific to Album creation where an external [sourcePath]
+  /// is provided to import existing photos into the new album.
+  ///
+  /// Delegates the operation to [BackendRepository.createAlbum].
+  Future<void> createAlbum(HierarchyNode node, String sourcePath) {
+    return _repository.createAlbum(node, sourcePath);
+  }
+
   /// Retrieves the user's application configuration settings.
   ///
   /// This includes preferences such as the active theme (Light/Dark) and the

@@ -76,7 +76,12 @@ class HierarchyCubit extends Cubit<HierarchyState> {
     );
   }
 
-  Future<void> addNode(String name, NodeType type, int parentId) async {
+  Future<void> addNode(
+    String name,
+    NodeType type,
+    int parentId, {
+    String? sourcePath,
+  }) async {
     final newNode = HierarchyNode(
       id: 0,
       parentId: parentId,
@@ -87,7 +92,14 @@ class HierarchyCubit extends Cubit<HierarchyState> {
     );
 
     try {
-      await _backendService.createNode(newNode);
+      // Use createAlbum if it's an album AND a source path is provided
+      if (type == NodeType.album &&
+          sourcePath != null &&
+          sourcePath.isNotEmpty) {
+        await _backendService.createAlbum(newNode, sourcePath);
+      } else {
+        await _backendService.createNode(newNode);
+      }
       await loadData();
     } catch (e) {
       if (kDebugMode) {
