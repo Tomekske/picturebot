@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -24,10 +24,11 @@ func main() {
 	db, err := gorm.Open(sqlite.Open("C:\\Users\\joost\\Documents\\Picturebot-Go\\dev.db"), &gorm.Config{})
 
 	if err != nil {
-		log.Fatalf("failed to connect database: %v", err)
+		slog.Error("failed to connect database: %v", err)
 	}
 
-	const logPath = `C:\Users\joost\Documents\Picturebot-Go\backend.json`
+	currentDate := time.Now().Format("2006-01-02")
+	logPath := fmt.Sprintf(`C:\Users\joost\Documents\Picturebot-Go\dev-backend_%s.jsonl`, currentDate)
 
 	// Setup Log Rotation
 	rotator := &lumberjack.Logger{
@@ -53,11 +54,6 @@ func main() {
 
 	slog.SetDefault(slog.New(handler))
 
-	// Usage
-	slog.Info("Application started", "os", "windows", "path", logPath)
-	slog.Error("Database connection failed", "error", "timeout")
-	slog.Debug("Test")
-
 	// Auto-migrate schema
 	if err := db.AutoMigrate(
 		&model.Picture{},
@@ -65,7 +61,7 @@ func main() {
 		&model.Hierarchy{},
 		&model.Settings{},
 	); err != nil {
-		log.Fatal("failed to migrate:", err)
+		slog.Error("failed to migrate:", err)
 	}
 
 	// Initialize Repositories

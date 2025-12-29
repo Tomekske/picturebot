@@ -1,6 +1,7 @@
 package service
 
 import (
+	"log/slog"
 	"picturebot-backend/internal/model"
 	"picturebot-backend/internal/repository"
 )
@@ -14,9 +15,19 @@ func NewSettingsService(repo *repository.SettingsRepository) *SettingsService {
 }
 
 func (s *SettingsService) GetSettings() (*model.Settings, error) {
-	return s.repo.GetSettings()
+	settings, err := s.repo.GetSettings()
+	if err != nil {
+		slog.Error("Service error: Failed to get settings", "error", err)
+	}
+	return settings, err
 }
 
 func (s *SettingsService) UpdateSettings(settings *model.Settings) error {
-	return s.repo.UpdateSettings(settings)
+	err := s.repo.UpdateSettings(settings)
+	if err != nil {
+		slog.Error("Service error: Failed to update settings", "error", err)
+	} else {
+		slog.Info("System settings updated", "id", settings.ID)
+	}
+	return err
 }

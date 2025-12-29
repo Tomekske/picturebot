@@ -1,6 +1,7 @@
 package service
 
 import (
+	"log/slog"
 	"picturebot-backend/internal/model"
 	"picturebot-backend/internal/repository"
 )
@@ -14,7 +15,11 @@ func NewPictureService(repo *repository.PictureRepository) *PictureService {
 }
 
 func (s *PictureService) CreatePicture(picture *model.Picture) error {
-	return s.repo.Create(picture)
+	err := s.repo.Create(picture)
+	if err != nil {
+		slog.Error("Service error: Failed to create picture", "fileName", picture.FileName, "error", err)
+	}
+	return err
 }
 
 func (s *PictureService) GetPictures() ([]model.Picture, error) {
