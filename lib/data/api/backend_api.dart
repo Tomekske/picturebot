@@ -16,7 +16,7 @@ class BackendApi {
   /// Returns a [List] of [Map] objects representing the folder and album structure.
   /// If the request fails or an exception occurs, it logs the error in debug mode
   /// and returns an empty list.
-  static Future<List<Map<String, dynamic>>> getLibraryData() async {
+  static Future<List<Map<String, dynamic>>?> getLibraryData() async {
     try {
       final Uri uri = Uri.parse('http://localhost:8080/hierarchy');
 
@@ -28,9 +28,17 @@ class BackendApi {
           );
 
       if (response.statusCode == 200) {
-        final List<dynamic> decodedList = jsonDecode(response.body);
+        if (response.body.isEmpty) {
+          return null;
+        }
 
-        return decodedList.cast<Map<String, dynamic>>();
+        final List<dynamic> decoded = jsonDecode(response.body);
+
+        if (decoded == null || decoded is! List) {
+          return null;
+        }
+
+        return decoded.cast<Map<String, dynamic>>();
       } else {
         throw Exception(
           'Failed to load hierarchy. Status Code: ${response.statusCode}',
@@ -41,7 +49,7 @@ class BackendApi {
         print("Error loading the hierarchy: $e");
       }
 
-      return [];
+      return null;
     }
   }
 

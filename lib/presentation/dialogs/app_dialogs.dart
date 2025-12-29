@@ -10,7 +10,7 @@ import '../../logic/settings/settings_cubit.dart';
 class AppDialogs {
   static Future<void> showHierarchyDialog(
     BuildContext context,
-    List<HierarchyNode> folders,
+    List<HierarchyNode>? folders,
     Function(String name, NodeType type, int parentId) onAdd,
   ) async {
     await showDialog(

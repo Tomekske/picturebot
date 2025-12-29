@@ -19,6 +19,17 @@ class HierarchyCubit extends Cubit<HierarchyState> {
     try {
       final newData = await _backendService.getLibraryData();
 
+      if (newData == null) {
+        emit(
+          state.copyWith(
+            status: HierarchyStatus.success,
+            rootNode: null,
+            selectedNode: null,
+          ),
+        );
+        return;
+      }
+
       HierarchyNode? nextSelectedNode;
 
       if (state.selectedNode != null) {

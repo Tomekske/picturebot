@@ -1,4 +1,4 @@
-import 'dart:io'; // Required for Image.file
+import 'dart:io';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,9 +50,9 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _openAddDialog() {
-    if (_cubit.state.rootNode == null) return;
-
-    final allFolders = _getAllFolders(_cubit.state.rootNode!);
+    final List<HierarchyNode> allFolders = _cubit.state.rootNode != null
+        ? _getAllFolders(_cubit.state.rootNode!)
+        : [];
 
     AppDialogs.showHierarchyDialog(
       context,
@@ -70,9 +70,21 @@ class _DashboardPageState extends State<DashboardPage> {
     return BlocBuilder<HierarchyCubit, HierarchyState>(
       bloc: _cubit,
       builder: (context, state) {
-        if (state.status == HierarchyStatus.loading || state.rootNode == null) {
+        if (state.status == HierarchyStatus.loading) {
           return const ScaffoldPage(
             content: Center(child: ProgressRing()),
+          );
+        }
+
+        // Handle Empty Database State
+        if (state.rootNode == null) {
+          return ScaffoldPage(
+            content: _buildEmptyState(
+              icon: FluentIcons.database,
+              text: "No library found. Start by creating your first folder.",
+              actionLabel: "Initialize Library",
+              onAction: () => _openAddDialog(),
+            ),
           );
         }
 
