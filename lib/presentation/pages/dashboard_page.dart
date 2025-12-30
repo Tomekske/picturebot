@@ -57,8 +57,8 @@ class _DashboardPageState extends State<DashboardPage> {
     AppDialogs.showHierarchyDialog(
       context,
       allFolders,
-      (name, type, parentId) {
-        _cubit.addNode(name, type, parentId);
+      (name, type, parentId, sourcePath) {
+        _cubit.addNode(name, type, parentId, sourcePath: sourcePath);
       },
     );
   }
@@ -264,12 +264,10 @@ class _DashboardPageState extends State<DashboardPage> {
         );
       }
     } else {
-      // Grouping Logic: We don't have Dates anymore.
-      // We group by SubFolder Name (e.g. "JPGs", "RAWs")
       if (node.subFolders.isEmpty) {
         content = _buildEmptyState(
           icon: FluentIcons.photo2,
-          text: "Album has no subfolders (JPGs/RAWs)",
+          text: "Album has no subfolders",
           actionLabel: "Import pictures",
           onAction: () {},
         );
@@ -278,9 +276,14 @@ class _DashboardPageState extends State<DashboardPage> {
           itemCount: node.subFolders.length,
           itemBuilder: (context, index) {
             final SubFolder subFolder = node.subFolders[index];
-            final pictures = subFolder.pictures;
+            final pictures = subFolder.pictures.where((pic) {
+              final ext = pic.extension.toLowerCase();
+              return ext == '.jpg';
+            }).toList();
 
-            if (pictures.isEmpty) return const SizedBox.shrink();
+            if (pictures.isEmpty) {
+              return const SizedBox.shrink();
+            }
 
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,7 +299,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        subFolder.name, // e.g., "JPGs"
+                        subFolder.name,
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: 8),
@@ -344,7 +347,6 @@ class _DashboardPageState extends State<DashboardPage> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            // UPDATED: Use Image.file instead of Image.network
                             Image.file(
                               File(picture.location),
                               fit: BoxFit.cover,

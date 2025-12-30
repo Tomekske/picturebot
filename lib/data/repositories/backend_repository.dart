@@ -64,6 +64,30 @@ class BackendRepository {
     }
   }
 
+  /// Persists a new album node and initiates the picture import process.
+  ///
+  /// Takes a [HierarchyNode] representing the album and a [sourcePath] string
+  /// pointing to the directory on the disk where the original pictures are located.
+  ///
+  /// It merges the node's JSON representation with the `source_path` field
+  /// before sending it to the backend via [BackendApi.createNode].
+  Future<void> createAlbum(HierarchyNode node, String sourcePath) async {
+    try {
+      // Create JSON from node and inject the source_path
+      final Map<String, dynamic> payload = {
+        ...node.toJson(),
+        'source_path': sourcePath,
+      };
+
+      await BackendApi.createNode(payload);
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error creating album with import: $e");
+      }
+      rethrow;
+    }
+  }
+
   /// Fetches and deserializes application settings.
   ///
   /// Retrieves raw JSON from [BackendApi.getSettings] and converts it into

@@ -11,7 +11,8 @@ class AppDialogs {
   static Future<void> showHierarchyDialog(
     BuildContext context,
     List<HierarchyNode>? folders,
-    Function(String name, NodeType type, int parentId) onAdd,
+    Function(String name, NodeType type, int parentId, String? sourcePath)
+    onAdd,
   ) async {
     await showDialog(
       context: context,
