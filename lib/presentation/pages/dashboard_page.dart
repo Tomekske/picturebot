@@ -455,6 +455,13 @@ class _DashboardPageState extends State<DashboardPage> {
             InspectorPanel(
               picture: selectedPicture,
               onClose: () => _cubit.selectPicture(null),
+              siblingPictures: node.subFolders
+                  .expand((subFolder) => subFolder.pictures)
+                  .where((pic) {
+                    final ext = pic.extension.toLowerCase();
+                    return ext == '.jpg';
+                  })
+                  .toList(),
             ),
         ],
       ),
