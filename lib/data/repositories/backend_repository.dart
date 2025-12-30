@@ -74,8 +74,10 @@ class BackendRepository {
   Future<void> createAlbum(HierarchyNode node, String sourcePath) async {
     try {
       // Create JSON from node and inject the source_path
-      final Map<String, dynamic> payload = node.toJson();
-      payload['source_path'] = sourcePath;
+      final Map<String, dynamic> payload = {
+        ...node.toJson(),
+        'source_path': sourcePath,
+      };
 
       await BackendApi.createNode(payload);
     } catch (e) {

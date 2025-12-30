@@ -103,7 +103,9 @@ class HierarchyCubit extends Cubit<HierarchyState> {
       await loadData();
     } catch (e) {
       if (kDebugMode) {
-        print("Error creating node: $e");
+        print(
+          "Error creating ${type == NodeType.album && sourcePath != null && sourcePath.isNotEmpty ? 'album with import' : 'node'}: $e",
+        );
       }
     }
   }

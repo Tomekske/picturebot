@@ -267,7 +267,7 @@ class _DashboardPageState extends State<DashboardPage> {
       if (node.subFolders.isEmpty) {
         content = _buildEmptyState(
           icon: FluentIcons.photo2,
-          text: "Album has no subfolders (JPGs/RAWs)",
+          text: "Album has no subfolders",
           actionLabel: "Import pictures",
           onAction: () {},
         );
