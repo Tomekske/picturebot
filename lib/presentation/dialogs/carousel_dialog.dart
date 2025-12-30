@@ -73,46 +73,50 @@ class _CarouselDialogState extends State<CarouselDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
-      focusNode: _focusNode,
-      autofocus: true,
-      onKeyEvent: _handleKeyEvent,
-      child: Stack(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(color: Colors.transparent),
-          ),
-
-          PageView.builder(
-            controller: _controller,
-            itemCount: widget.pictures.length,
-            onPageChanged: (index) => setState(() => _currentIndex = index),
-            itemBuilder: (context, index) {
-              return InteractiveViewer(
-                child: GestureDetector(
-                  onTap: () {},
-                  child: Image.file(
-                    File(widget.pictures[index].location),
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              );
-            },
-          ),
-
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: CarouselOverlay(
-              text: "${_currentIndex + 1}/${widget.pictures.length}",
-              isLiked: false,
+    return ScaffoldPage(
+      padding: EdgeInsets.zero,
+      content: KeyboardListener(
+        focusNode: _focusNode,
+        autofocus: true,
+        onKeyEvent: _handleKeyEvent,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(color: Colors.transparent),
             ),
-          ),
 
-          _buildNavArrows(),
-        ],
+            PageView.builder(
+              controller: _controller,
+              itemCount: widget.pictures.length,
+              onPageChanged: (index) => setState(() => _currentIndex = index),
+              itemBuilder: (context, index) {
+                return InteractiveViewer(
+                  child: GestureDetector(
+                    onTap: () {},
+                    child: Image.file(
+                      File(widget.pictures[index].location),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: CarouselOverlay(
+                text: "${_currentIndex + 1}/${widget.pictures.length}",
+                onClose: () => Navigator.of(context).pop(),
+              ),
+            ),
+
+            _buildNavArrows(),
+          ],
+        ),
       ),
     );
   }

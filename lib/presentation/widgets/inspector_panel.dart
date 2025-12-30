@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/services.dart';
 import 'package:picturebot/presentation/dialogs/carousel_dialog.dart';
 import '../../data/models/picture.dart';
 import 'section_header.dart';
@@ -27,21 +26,21 @@ class _InspectorPanelState extends State<InspectorPanel> {
   void _openFullScreenCarousel(BuildContext context) {
     final initialIndex = widget.siblingPictures.indexOf(widget.picture);
 
-    showDialog(
+    showGeneralDialog(
       context: context,
+      barrierLabel: "Dismiss",
       barrierDismissible: true,
-      builder: (context) {
-        return Focus(
-          autofocus: true,
-          child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height,
-            color: Colors.black.withValues(alpha: 0.9),
-            child: CarouselDialog(
-              pictures: widget.siblingPictures,
-              initialIndex: initialIndex != -1 ? initialIndex : 0,
-            ),
-          ),
+      barrierColor: Colors.black,
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return CarouselDialog(
+          pictures: widget.siblingPictures,
+          initialIndex: initialIndex != -1 ? initialIndex : 0,
+        );
+      },
+      transitionBuilder: (context, anim1, anim2, child) {
+        return FadeTransition(
+          opacity: anim1,
+          child: child,
         );
       },
     );
